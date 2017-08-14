@@ -1,0 +1,19 @@
+version: '2'
+services:
+  guess_what:
+    build: ./
+    # volumes:
+      # DEV PURPOSE ONLY
+      # - $GW_SRC:/go/src/app
+    environment:
+      - ENVIRONMENT=$GW_ENV
+      - VIRTUAL_HOST=$GW_HOST
+      - VIRTUAL_PORT=3000
+
+  reverse-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - $HTTP_PORT:80/tcp
+      - $HTTPS_PORT:443/tcp
+    volumes:
+      - $DOCKER_SOCK:/tmp/docker.sock:ro
