@@ -1,6 +1,6 @@
 FROM golang:1.9
 
-WORKDIR /go/src/app
+WORKDIR /go/src/github.com/LeReverandNox/GuessWhat/src
 
 ADD files /
 RUN chmod +x /run.sh
@@ -12,7 +12,7 @@ RUN go-wrapper install
 
 RUN go get github.com/pilu/fresh
 
-VOLUME /go/src/app
+VOLUME /go/src/github.com/LeReverandNox/GuessWhat/src
 
 EXPOSE 3000
 

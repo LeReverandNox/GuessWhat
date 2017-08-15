@@ -4,7 +4,7 @@ services:
     build: ./
     # volumes:
       # DEV PURPOSE ONLY
-      # - $GW_SRC:/go/src/app
+      # - $GW_SRC:/go/src/github.com/LeReverandNox/GuessWhat/src
     environment:
       - ENVIRONMENT=$GW_ENV
       - VIRTUAL_HOST=$GW_HOST
