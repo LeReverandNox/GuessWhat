@@ -9,6 +9,8 @@ import (
 
 func registerRoutes(router *mux.Router) {
 	router.HandleFunc("/", handlers.IndexHandler).Methods("GET")
+
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("assets/")))
 }
 
 // NewRouter is a method that encapsulate a Mux router, with all it's routes
