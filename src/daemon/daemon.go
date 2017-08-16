@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/LeReverandNox/GuessWhat/src/router"
+	"github.com/LeReverandNox/GuessWhat/src/routing"
 )
 
 // Config is a structure holding the daemon's config
@@ -15,7 +15,7 @@ type Config struct {
 
 // Run is the method that launch the server
 func Run(cfg *Config) error {
-	router := router.NewRouter()
+	router := routing.NewRouter()
 
 	fmt.Printf("The Guess What app is now running on %v:%v", cfg.Host, cfg.Port)
 
