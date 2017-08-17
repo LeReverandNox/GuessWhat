@@ -1,6 +1,12 @@
 package socket
 
-import "golang.org/x/net/websocket"
+import (
+	"log"
+
+	"github.com/LeReverandNox/GuessWhat/src/game"
+
+	"golang.org/x/net/websocket"
+)
 
 type Socket struct {
 	Socket *websocket.Conn
@@ -31,16 +37,16 @@ type Socket struct {
 // 	return nil
 // }
 
-// func sendToAll(data Message) error {
-// 	for _, socket := range sockets {
-// 		if err := websocket.JSON.Send(socket, data); err != nil {
-// 			log.Println(err)
-// 			return err
+func (socket *Socket) SendToAll(game *game.Game, data map[string]string) error {
+	for _, client := range game.Clients {
+		if err := websocket.JSON.Send(client.Socket, data); err != nil {
+			log.Println(err)
+			return err
 
-// 		}
-// 	}
-// 	return nil
-// }
+		}
+	}
+	return nil
+}
 
 // func sendTo(receiver *websocket.Conn, data Message) error {
 // 	if err := websocket.JSON.Send(receiver, data); err != nil {
