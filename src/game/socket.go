@@ -1,9 +1,7 @@
-package socket
+package game
 
 import (
 	"log"
-
-	"github.com/LeReverandNox/GuessWhat/src/game"
 
 	"golang.org/x/net/websocket"
 )
@@ -37,9 +35,9 @@ type Socket struct {
 // 	return nil
 // }
 
-func (socket *Socket) SendToAll(game *game.Game, data map[string]string) error {
+func (socket *Socket) SendToAll(game *Game, data map[string]string) error {
 	for _, client := range game.Clients {
-		if err := websocket.JSON.Send(client.Socket, data); err != nil {
+		if err := websocket.JSON.Send(client.Socket.Socket, data); err != nil {
 			log.Println(err)
 			return err
 
