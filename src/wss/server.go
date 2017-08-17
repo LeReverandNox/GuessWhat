@@ -15,7 +15,8 @@ func parseMessage(client *game.Client, msg map[string]string) {
 	switch msg["action"] {
 	case "set_nickname":
 		setNicknameAction(client, msg["nickname"])
-
+	case "send_message":
+		sendMessageAction(client, msg["content"])
 	}
 }
 

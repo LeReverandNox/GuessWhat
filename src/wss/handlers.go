@@ -4,11 +4,13 @@ import (
 	"log"
 
 	"github.com/LeReverandNox/GuessWhat/src/game"
+	"github.com/fatih/structs"
 	"golang.org/x/net/websocket"
 )
 
 func onConnection(ws *websocket.Conn) *game.Client {
 	client := myGame.AddClient(ws)
+	sendAllMessages(client)
 	return client
 }
 
@@ -21,7 +23,22 @@ func onDisconnection(client *game.Client, err error) error {
 func setNicknameAction(client *game.Client, nickname string) {
 	client.SetNickname(nickname)
 
-	msg := make(map[string]string)
+	msg := make(map[string]interface{})
+	// DEBUG
 	msg["message"] = "Je s'apelle " + client.Nickname
 	client.Socket.SendToAll(myGame, msg)
+	// DEBUG
+}
+
+func sendMessageAction(client *game.Client, content string) {
+	msg := myGame.AddMessage(client.Nickname, content)
+	msgMap := structs.Map(msg)
+	client.Socket.SendToAll(myGame, msgMap)
+}
+
+func sendAllMessages(client *game.Client) {
+	for _, msg := range myGame.Messages {
+		msgMap := structs.Map(msg)
+		client.Socket.SendToSocket(client.Socket, msgMap)
+	}
 }
