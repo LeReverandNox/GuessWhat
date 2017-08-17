@@ -22,20 +22,19 @@ type Socket struct {
 // 	return nil
 // }
 
-// func brodcast(emitter *websocket.Conn, data Message) error {
-// 	for _, socket := range sockets {
-// 		if socket != emitter {
-// 			if err := websocket.JSON.Send(socket, data); err != nil {
-// 				log.Println(err)
-// 				return err
-// 			}
+func (socket *Socket) Broadcast(game *Game, data map[string]interface{}) error {
+	for _, client := range game.Clients {
+		if client.Socket != socket {
+			if err := websocket.JSON.Send(client.Socket.Socket, data); err != nil {
+				log.Println(err)
+				return err
+			}
+		}
+	}
+	return nil
+}
 
-// 		}
-// 	}
-// 	return nil
-// }
-
-func (socket *Socket) SendToAll(game *Game, data map[string]string) error {
+func (socket *Socket) SendToAll(game *Game, data map[string]interface{}) error {
 	for _, client := range game.Clients {
 		if err := websocket.JSON.Send(client.Socket.Socket, data); err != nil {
 			log.Println(err)
@@ -46,11 +45,11 @@ func (socket *Socket) SendToAll(game *Game, data map[string]string) error {
 	return nil
 }
 
-// func sendTo(receiver *websocket.Conn, data Message) error {
-// 	if err := websocket.JSON.Send(receiver, data); err != nil {
-// 		log.Println(err)
-// 		return err
+func (socket *Socket) SendToSocket(receiver *Socket, data map[string]interface{}) error {
+	if err := websocket.JSON.Send(receiver.Socket, data); err != nil {
+		log.Println(err)
+		return err
 
-// 	}
-// 	return nil
-// }
+	}
+	return nil
+}
