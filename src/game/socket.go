@@ -10,18 +10,6 @@ type Socket struct {
 	Socket *websocket.Conn
 }
 
-// var sockets []*websocket.Conn
-
-// func removeConn(ws *websocket.Conn) error {
-// 	for index, socket := range sockets {
-// 		if socket == ws {
-// 			sockets = append(sockets[:index], sockets[index+1:]...)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
 func (socket *Socket) Broadcast(game *Game, data map[string]interface{}) error {
 	for _, client := range game.Clients {
 		if client.Socket != socket {
