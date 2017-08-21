@@ -29,12 +29,17 @@ func parseMessage(client *game.Client, msg map[string]string) {
 }
 
 func socketHandler(ws *websocket.Conn) {
-	client := onConnection(ws)
+	client, connectionError := onConnection(ws)
+	if connectionError != nil {
+		ws.Close()
+	}
 
 	for {
 		var msg map[string]string
 		if err := websocket.JSON.Receive(ws, &msg); err != nil {
-			onDisconnection(client, err)
+			if connectionError == nil {
+				onDisconnection(client, err)
+			}
 			break
 		}
 		parseMessage(client, msg)
