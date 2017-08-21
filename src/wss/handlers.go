@@ -1,6 +1,7 @@
 package wss
 
 import (
+	"errors"
 	"log"
 
 	"github.com/LeReverandNox/GuessWhat/src/game"
@@ -8,8 +9,24 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-func onConnection(ws *websocket.Conn) *game.Client {
-	client := myGame.AddClient(ws)
+func onConnection(ws *websocket.Conn) (*game.Client, error) {
+	socket := game.NewSocket(ws)
+	nickname := ws.Config().Location.Query().Get("nickname")
+
+	cbMsg := make(map[string]interface{})
+	cbMsg["action"] = "set_nickname_cb"
+	cbMsg["nickname"] = nickname
+
+	if myGame.IsNicknameTaken(nickname) {
+		cbMsg["success"] = false
+		socket.SendToSocket(socket, cbMsg)
+		return nil, errors.New("This nickname is already taken")
+	}
+
+	cbMsg["success"] = true
+	socket.SendToSocket(socket, cbMsg)
+
+	client := myGame.AddClient(socket, nickname)
 	// Send everything the new client needs to know
 	sendAllGameMessagesTo(client)
 	sendAllGameClientsTo(client)
@@ -25,7 +42,7 @@ func onConnection(ws *websocket.Conn) *game.Client {
 	myGame.ListRooms()
 	myGame.ListMessages()
 
-	return client
+	return client, nil
 }
 
 func onDisconnection(client *game.Client, err error) error {
@@ -194,7 +211,6 @@ func sendRoomDepartureToAll(client *game.Client, room *game.Room) {
 }
 
 func sendRoomDeletionToAll(client *game.Client, room *game.Room) {
-
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "leaving_room"
 	updateMsg["room"] = room
