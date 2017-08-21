@@ -1,7 +1,5 @@
 package game
 
-import "golang.org/x/net/websocket"
-
 type Client struct {
 	Socket   *Socket
 	Nickname string
@@ -11,13 +9,14 @@ type Client struct {
 
 var id int
 
-func NewClient(ws *websocket.Conn) *Client {
+func NewClient(socket *Socket, nickname string) *Client {
 	defer func() {
 		id++
 	}()
 
 	client := Client{}
-	client.Socket = &Socket{ws}
+	client.Socket = socket
+	client.Nickname = nickname
 	client.ID = id
 	return &client
 }
