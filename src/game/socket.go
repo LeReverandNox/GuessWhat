@@ -52,3 +52,16 @@ func (socket *Socket) SendToRoom(room *Room, data map[string]interface{}) error 
 
 	return nil
 }
+
+func (socket *Socket) BroadcastToRoom(room *Room, data map[string]interface{}) error {
+	for _, client := range room.Clients {
+		if client.Socket != socket {
+			if err := websocket.JSON.Send(client.Socket.Socket, data); err != nil {
+				log.Println(err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
