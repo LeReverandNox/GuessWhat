@@ -17,3 +17,4 @@ services:
       - $HTTPS_PORT:443/tcp
     volumes:
       - $DOCKER_SOCK:/tmp/docker.sock:ro
+      - ./files/my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf
