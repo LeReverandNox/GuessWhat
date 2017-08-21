@@ -44,8 +44,15 @@ func sendAllMessages(client *game.Client) {
 }
 
 func joinRoomAction(client *game.Client, roomName string) {
+	log.Printf("%v veut rejoindre %v", client.Nickname, roomName)
+	msg := make(map[string]interface{})
+
 	room := myGame.GetRoom(roomName)
 	if err := room.AddClient(client); err != nil {
-
+		msg["join_room_cb"] = false
+	} else {
+		msg["join_room_cb"] = true
 	}
+	client.Socket.SendToSocket(client.Socket, msg)
+	log.Println(room)
 }
