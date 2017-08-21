@@ -24,7 +24,7 @@ func NewRoom(name string) *Room {
 // RemoveClient removes a client from the room
 func (room *Room) RemoveClient(client *Client) error {
 	for i, client := range room.Clients {
-		if room.isClientIn(client) {
+		if room.IsClientIn(client) {
 			room.Clients = append(room.Clients[:i], room.Clients[i+1:]...)
 			return nil
 		}
@@ -34,14 +34,14 @@ func (room *Room) RemoveClient(client *Client) error {
 
 // AddClient adds a client to the room
 func (room *Room) AddClient(client *Client) error {
-	if !room.isClientIn(client) {
+	if !room.IsClientIn(client) {
 		room.Clients = append(room.Clients, client)
 		return nil
 	}
 	return errors.New("The client " + client.Nickname + " is already in the room " + room.Name)
 }
 
-func (room *Room) isClientIn(clientToSearch *Client) bool {
+func (room *Room) IsClientIn(clientToSearch *Client) bool {
 	for _, client := range room.Clients {
 		if clientToSearch == client {
 			return true
@@ -52,8 +52,11 @@ func (room *Room) isClientIn(clientToSearch *Client) bool {
 
 // ListClients lists the clients of the room
 func (room *Room) ListClients() {
-	log.Printf("Voici les clients de la channel")
+	log.Println("Voici les clients de la channel")
 	for i, client := range room.Clients {
-		log.Printf("Client %v : %v", i, client.Nickname)
+		log.Println("")
+		log.Printf("Client %v : %v\n", i, client.Nickname)
+		log.Println("")
 	}
+	log.Println("...")
 }
