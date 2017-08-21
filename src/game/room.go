@@ -10,7 +10,7 @@ type Room struct {
 	Name     string
 	Messages []*Message
 	Clients  []*Client
-	Drawer   string
+	Drawer   *Client
 	Image    string
 }
 
