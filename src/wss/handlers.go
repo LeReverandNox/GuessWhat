@@ -10,7 +10,8 @@ import (
 
 func onConnection(ws *websocket.Conn) *game.Client {
 	client := myGame.AddClient(ws)
-	sendAllGameMessages(client)
+	sendAllGameMessagesTo(client)
+	sendAllGameClientsTo(client)
 
 	myGame.ListClients()
 	myGame.ListRooms()
@@ -65,21 +66,34 @@ func sendMessageAction(client *game.Client, content string) {
 	}
 }
 
-func sendAllGameMessages(client *game.Client) {
-	for _, msg := range myGame.Messages {
-		msgMap := structs.Map(msg)
-		msgMap["action"] = "incoming_global_message"
-		client.Socket.SendToSocket(client.Socket, msgMap)
-	}
+func sendAllGameMessagesTo(client *game.Client) {
+	messages := make(map[string]interface{})
+	messages["action"] = "incoming_all_global_message"
+	messages["messages"] = myGame.Messages
+	client.Socket.SendToSocket(client.Socket, messages)
 }
 
-func sendAllRoomMessages(client *game.Client, room *game.Room) {
-	for _, msg := range room.Messages {
-		msgMap := structs.Map(msg)
-		msgMap["action"] = "incoming_room_message"
-		msgMap["channel"] = room.Name
-		client.Socket.SendToSocket(client.Socket, msgMap)
-	}
+func sendAllGameClientsTo(client *game.Client) {
+	clients := make(map[string]interface{})
+	clients["action"] = "incoming_all_global_users"
+	clients["clients"] = myGame.Clients
+	client.Socket.SendToSocket(client.Socket, clients)
+}
+
+func sendAllRoomMessagesTo(client *game.Client, room *game.Room) {
+	messages := make(map[string]interface{})
+	messages["action"] = "incoming_all_room_message"
+	messages["channel"] = room.Name
+	messages["messages"] = room.Messages
+	client.Socket.SendToSocket(client.Socket, messages)
+}
+
+func sendAllRoomClientsTo(client *game.Client, room *game.Room) {
+	clients := make(map[string]interface{})
+	clients["action"] = "incoming_all_room_clients"
+	clients["channel"] = room.Name
+	clients["clients"] = room.Clients
+	client.Socket.SendToSocket(client.Socket, clients)
 }
 
 func joinRoomAction(client *game.Client, roomName string) {
@@ -94,6 +108,7 @@ func joinRoomAction(client *game.Client, roomName string) {
 	} else {
 		msg["success"] = true
 		client.Socket.SendToSocket(client.Socket, msg)
-		sendAllRoomMessages(client, room)
+		sendAllRoomMessagesTo(client, room)
+		sendAllRoomClientsTo(client, room)
 	}
 }
