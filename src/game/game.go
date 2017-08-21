@@ -79,3 +79,12 @@ func (game *Game) GetRoom(name string) *Room {
 	room, _ := game.AddRoom(name)
 	return room.(*Room)
 }
+
+// ListRooms lists the rooms of the game
+func (game *Game) ListRooms() {
+	log.Printf("Voici les rooms du serveur")
+	for i, room := range game.Rooms {
+		log.Printf("Room %v : %v", i, room.Name)
+		room.ListClients()
+	}
+}

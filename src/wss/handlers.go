@@ -54,5 +54,5 @@ func joinRoomAction(client *game.Client, roomName string) {
 		msg["join_room_cb"] = true
 	}
 	client.Socket.SendToSocket(client.Socket, msg)
-	log.Println(room)
+	myGame.ListRooms()
 }

@@ -1,6 +1,9 @@
 package game
 
-import "errors"
+import (
+	"errors"
+	"log"
+)
 
 type Room struct {
 	Name    string
@@ -45,4 +48,12 @@ func (room *Room) isClientIn(clientToSearch *Client) bool {
 		}
 	}
 	return false
+}
+
+// ListClients lists the clients of the room
+func (room *Room) ListClients() {
+	log.Printf("Voici les clients de la channel")
+	for i, client := range room.Clients {
+		log.Printf("Client %v : %v", i, client.Nickname)
+	}
 }
