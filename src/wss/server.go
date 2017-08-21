@@ -20,11 +20,14 @@ func parseMessage(client *game.Client, msg map[string]string) {
 	case "join_room":
 		joinRoomAction(client, msg["room"])
 	}
+
+	myGame.ListClients()
+	myGame.ListRooms()
+	myGame.ListMessages()
 }
 
 func socketHandler(ws *websocket.Conn) {
 	client := onConnection(ws)
-	myGame.ListClients()
 
 	for {
 		var msg map[string]string
@@ -34,7 +37,6 @@ func socketHandler(ws *websocket.Conn) {
 		}
 		parseMessage(client, msg)
 	}
-	myGame.ListClients()
 }
 
 // StartServer launches the WebSocket server
