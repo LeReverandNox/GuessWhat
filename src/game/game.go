@@ -32,17 +32,6 @@ func (game *Game) AddClient(ws *websocket.Conn) *Client {
 
 }
 
-// ListClients prints the list of clients in the game
-func (game *Game) ListClients() {
-	log.Println("Voici les clients du serveur")
-	for i, client := range game.Clients {
-		log.Println("")
-		log.Printf("Client %v : %v\n", i, client.Nickname)
-		log.Println("")
-	}
-	log.Println("...")
-}
-
 // RemoveClient remove a client from the game
 func (game *Game) RemoveClient(clientToDelete *Client) {
 	for i, client := range game.Clients {
@@ -84,18 +73,6 @@ func (game *Game) GetRoom(name string) *Room {
 	return room.(*Room)
 }
 
-// ListRooms lists the rooms of the game
-func (game *Game) ListRooms() {
-	log.Println("Voici les rooms du serveur")
-	for i, room := range game.Rooms {
-		log.Println("")
-		log.Printf("Room %v : %v\n", i, room.Name)
-		room.ListClients()
-		log.Println("")
-	}
-	log.Println("...")
-}
-
 // GetCurrentClientRoom returns the current room of a client.
 func (game *Game) GetCurrentClientRoom(client *Client) interface{} {
 	for _, room := range game.Rooms {
@@ -114,6 +91,8 @@ func (game *Game) AddMessage(sender *Client, content string) *Message {
 	return message
 }
 
+// DEBUG METHODS
+
 // ListMessages lists the messages of the game
 func (game *Game) ListMessages() {
 	log.Println("Voici les messages du serveur")
@@ -122,6 +101,29 @@ func (game *Game) ListMessages() {
 		log.Printf("Content : %v\n", msg.Content)
 		log.Printf("Date : %v\n", msg.Date)
 		log.Printf("Sender : %v\n", msg.Sender.Nickname)
+		log.Println("")
+	}
+	log.Println("...")
+}
+
+// ListRooms lists the rooms of the game
+func (game *Game) ListRooms() {
+	log.Println("Voici les rooms du serveur")
+	for i, room := range game.Rooms {
+		log.Println("")
+		log.Printf("Room %v : %v\n", i, room.Name)
+		room.ListClients()
+		log.Println("")
+	}
+	log.Println("...")
+}
+
+// ListClients prints the list of clients in the game
+func (game *Game) ListClients() {
+	log.Println("Voici les clients du serveur")
+	for i, client := range game.Clients {
+		log.Println("")
+		log.Printf("Client %v : %v\n", i, client.Nickname)
 		log.Println("")
 	}
 	log.Println("...")
