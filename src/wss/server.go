@@ -19,6 +19,12 @@ func parseMessage(client *game.Client, msg map[string]string) {
 		joinRoomAction(client, msg["room"])
 	case "leave_room":
 		leaveRoomAction(client, msg["room"])
+	case "canvas_mouse_down":
+		canvasMouseDownAction(client, msg)
+	case "canvas_mouse_move":
+		canvasMouseMoveAction(client, msg)
+	case "canvas_mouse_up":
+		canvasMouseUpAction(client, msg)
 	}
 
 	myGame.ListClients()
