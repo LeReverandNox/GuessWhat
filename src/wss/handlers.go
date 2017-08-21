@@ -10,7 +10,7 @@ import (
 
 func onConnection(ws *websocket.Conn) *game.Client {
 	client := myGame.AddClient(ws)
-	sendAllMessages(client)
+	sendAllGameMessages(client)
 	myGame.ListClients()
 	myGame.ListRooms()
 	myGame.ListMessages()
@@ -47,13 +47,32 @@ func setNicknameAction(client *game.Client, nickname string) {
 }
 
 func sendMessageAction(client *game.Client, content string) {
-	msg := myGame.AddMessage(client, content)
-	msgMap := structs.Map(msg)
-	client.Socket.SendToAll(myGame, msgMap)
+	if room := myGame.GetCurrentClientRoom(client); room != nil {
+		trueRoom := room.(*game.Room)
+		msg := trueRoom.AddMessage(client, content)
+		msgMap := structs.Map(msg)
+		msgMap["action"] = "incoming_room_message"
+		msgMap["channel"] = trueRoom.Name
+
+		client.Socket.SendToRoom(trueRoom, msgMap)
+	} else {
+		msg := myGame.AddMessage(client, content)
+		msgMap := structs.Map(msg)
+		msgMap["action"] = "incoming_global_message"
+
+		client.Socket.SendToAll(myGame, msgMap)
+	}
 }
 
-func sendAllMessages(client *game.Client) {
+func sendAllGameMessages(client *game.Client) {
 	for _, msg := range myGame.Messages {
+		msgMap := structs.Map(msg)
+		client.Socket.SendToSocket(client.Socket, msgMap)
+	}
+}
+
+func sendAllRoomMessages(client *game.Client, room *game.Room) {
+	for _, msg := range room.Messages {
 		msgMap := structs.Map(msg)
 		client.Socket.SendToSocket(client.Socket, msgMap)
 	}
@@ -69,6 +88,7 @@ func joinRoomAction(client *game.Client, roomName string) {
 		msg["success"] = false
 	} else {
 		msg["success"] = true
+		sendAllRoomMessages(client, room)
 	}
 	client.Socket.SendToSocket(client.Socket, msg)
 }
