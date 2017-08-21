@@ -33,11 +33,11 @@ func onDisconnection(client *game.Client, err error) error {
 	myGame.RemoveClient(client)
 	if room := myGame.GetCurrentClientRoom(client); room != nil {
 		trueRoom := room.(*game.Room)
-		trueRoom.RemoveClient(client)
+		isEmpty, _ := trueRoom.RemoveClient(client)
 		// Broadcast his departure from the channel to other clients
 		sendRoomDepartureToAll(client, trueRoom)
 
-		if trueRoom.IsEmpty() {
+		if isEmpty {
 			myGame.RemoveRoom(trueRoom)
 			// Tell everyone about the room suppression.
 			sendRoomDeletionToAll(client, trueRoom)
@@ -121,6 +121,31 @@ func joinRoomAction(client *game.Client, roomName string) {
 		client.Socket.BroadcastToRoom(room, updateMsg)
 
 	}
+}
+
+func leaveRoomAction(client *game.Client, roomName string) {
+	room, _ := myGame.GetRoom(roomName)
+
+	cbMsg := make(map[string]interface{})
+	cbMsg["action"] = "leave_room_cb"
+	cbMsg["room"] = room
+
+	isEmpty, err := room.RemoveClient(client)
+	if err != nil {
+		cbMsg["success"] = false
+		client.Socket.SendToSocket(client.Socket, cbMsg)
+	} else {
+		cbMsg["success"] = true
+		client.Socket.SendToSocket(client.Socket, cbMsg)
+		// Broadcast his departure from the channel to other clients
+		sendRoomDepartureToAll(client, room)
+		if isEmpty {
+			myGame.RemoveRoom(room)
+			// Tell everyone about the room suppression.
+			sendRoomDeletionToAll(client, room)
+		}
+	}
+
 }
 
 func sendAllGameMessagesTo(client *game.Client) {
