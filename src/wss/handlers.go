@@ -14,19 +14,21 @@ func onConnection(ws *websocket.Conn) (*game.Client, error) {
 	nickname := ws.Config().Location.Query().Get("nickname")
 
 	cbMsg := make(map[string]interface{})
-	cbMsg["action"] = "set_nickname_cb"
+	cbMsg["action"] = "connexion_cb"
 	cbMsg["nickname"] = nickname
 
 	if myGame.IsNicknameTaken(nickname) {
+		cbMsg["client"] = nil
 		cbMsg["success"] = false
 		socket.SendToSocket(socket, cbMsg)
 		return nil, errors.New("This nickname is already taken")
 	}
 
+	client := myGame.AddClient(socket, nickname)
+	cbMsg["client"] = client
 	cbMsg["success"] = true
 	socket.SendToSocket(socket, cbMsg)
 
-	client := myGame.AddClient(socket, nickname)
 	// Send everything the new client needs to know
 	sendAllGameMessagesTo(client)
 	sendAllGameClientsTo(client)
