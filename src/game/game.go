@@ -52,16 +52,16 @@ func (game *Game) AddRoom(name string) (interface{}, error) {
 }
 
 // GetRoom returns the desired room. If not existing, creates it before.
-func (game *Game) GetRoom(name string) *Room {
+func (game *Game) GetRoom(name string) (*Room, bool) {
 	if game.isRoomExisting(name) {
 		for _, room := range game.Rooms {
 			if room.Name == name {
-				return room
+				return room, false
 			}
 		}
 	}
 	room, _ := game.AddRoom(name)
-	return room.(*Room)
+	return room.(*Room), true
 }
 
 // GetCurrentClientRoom returns the current room of a client.
