@@ -12,6 +12,7 @@ func onConnection(ws *websocket.Conn) *game.Client {
 	client := myGame.AddClient(ws)
 	sendAllGameMessagesTo(client)
 	sendAllGameClientsTo(client)
+	sendAllRoomsTo(client)
 
 	myGame.ListClients()
 	myGame.ListRooms()
@@ -116,4 +117,11 @@ func sendAllRoomClientsTo(client *game.Client, room *game.Room) {
 	clients["channel"] = room.Name
 	clients["clients"] = room.Clients
 	client.Socket.SendToSocket(client.Socket, clients)
+}
+
+func sendAllRoomsTo(client *game.Client) {
+	rooms := make(map[string]interface{})
+	rooms["action"] = "incoming_all_rooms"
+	rooms["rooms"] = myGame.Rooms
+	client.Socket.SendToSocket(client.Socket, rooms)
 }
