@@ -39,21 +39,28 @@ function init () {
         });
         document.getElementById("hw").addEventListener("click", function () {
             conn.send(msg);
-        })
+        });
         document.getElementById("change_nickname").addEventListener("click", function () {
             var msg = JSON.stringify({
                 action: "set_nickname",
                 nickname: document.getElementById("nickname").value
-            })
+            });
             conn.send(msg);
-        })
+        });
         document.getElementById("send_message").addEventListener("click", function () {
             var msg = JSON.stringify({
                 action: "send_message",
                 content: document.getElementById("message").value
-            })
+            });
             conn.send(msg);
-        })
+        });
+        document.getElementById("join_room").addEventListener("click", function () {
+            var msg = JSON.stringify({
+                action: "join_room",
+                content: document.getElementById("room").value
+            });
+            conn.send(msg);
+        });
     } else {
         console.log("WEBSOCKET NOT SUPPORTED");
     }
