@@ -41,3 +41,14 @@ func (socket *Socket) SendToSocket(receiver *Socket, data map[string]interface{}
 	}
 	return nil
 }
+
+func (socket *Socket) SendToRoom(room *Room, data map[string]interface{}) error {
+	for _, client := range room.Clients {
+		if err := websocket.JSON.Send(client.Socket.Socket, data); err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+
+	return nil
+}
