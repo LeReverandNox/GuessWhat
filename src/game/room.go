@@ -9,6 +9,7 @@ type Room struct {
 	Image   string
 }
 
+// NewRoom creates a new room and returns it
 func NewRoom(name string) *Room {
 	room := Room{}
 	room.Name = name
@@ -17,19 +18,29 @@ func NewRoom(name string) *Room {
 	return &room
 }
 
-// AddRoom adds a room to the server
-func (game *Game) AddRoom(name string) error {
-	if !game.isRoomExisting(name) {
-		room := NewRoom(name)
-		game.Rooms = append(game.Rooms, room)
-		return nil
+// RemoveClient removes a client from the room
+func (room *Room) RemoveClient(client *Client) error {
+	for i, client := range room.Clients {
+		if room.isClientIn(client) {
+			room.Clients = append(room.Clients[:i], room.Clients[i+1:]...)
+			return nil
+		}
 	}
-	return errors.New("The channel " + name + " already exist")
+	return errors.New("The client " + client.Nickname + " is already in the room " + room.Name)
 }
 
-func (game *Game) isRoomExisting(name string) bool {
-	for _, room := range game.Rooms {
-		if room.Name == name {
+// AddClient adds a client to the room
+func (room *Room) AddClient(client *Client) error {
+	if !room.isClientIn(client) {
+		room.Clients = append(room.Clients, client)
+		return nil
+	}
+	return errors.New("The client " + client.Nickname + " is already in the room " + room.Name)
+}
+
+func (room *Room) isClientIn(clientToSearch *Client) bool {
+	for _, client := range room.Clients {
+		if clientToSearch == client {
 			return true
 		}
 	}
