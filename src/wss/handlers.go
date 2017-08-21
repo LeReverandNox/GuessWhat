@@ -42,3 +42,10 @@ func sendAllMessages(client *game.Client) {
 		client.Socket.SendToSocket(client.Socket, msgMap)
 	}
 }
+
+func joinRoomAction(client *game.Client, roomName string) {
+	room := myGame.GetRoom(roomName)
+	if err := room.AddClient(client); err != nil {
+
+	}
+}

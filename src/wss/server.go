@@ -17,6 +17,8 @@ func parseMessage(client *game.Client, msg map[string]string) {
 		setNicknameAction(client, msg["nickname"])
 	case "send_message":
 		sendMessageAction(client, msg["content"])
+	case "join_room":
+		joinRoomAction(client, msg["room"])
 	}
 }
 
