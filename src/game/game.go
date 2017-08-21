@@ -41,6 +41,15 @@ func (game *Game) RemoveClient(clientToDelete *Client) {
 	}
 }
 
+// RemoveRoom remove a room from the game
+func (game *Game) RemoveRoom(roomToDelete *Room) {
+	for i, room := range game.Rooms {
+		if room.Name == roomToDelete.Name {
+			game.Rooms = append(game.Rooms[:i], game.Rooms[i+1:]...)
+		}
+	}
+}
+
 // AddRoom adds a room to the server
 func (game *Game) AddRoom(name string) (interface{}, error) {
 	if !game.isRoomExisting(name) {
