@@ -61,6 +61,13 @@ function init () {
             });
             conn.send(msg);
         });
+        document.getElementById("leave_room").addEventListener("click", function () {
+            var msg = JSON.stringify({
+                action: "leave_room",
+                room: document.getElementById("room").value
+            });
+            conn.send(msg);
+        });
     } else {
         console.log("WEBSOCKET NOT SUPPORTED");
     }
