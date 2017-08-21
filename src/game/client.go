@@ -6,6 +6,7 @@ type Client struct {
 	Socket   *Socket
 	Nickname string
 	ID       int
+	Score    int
 }
 
 var id int
