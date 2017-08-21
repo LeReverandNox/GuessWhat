@@ -25,14 +25,16 @@ func NewRoom(name string) *Room {
 }
 
 // RemoveClient removes a client from the room
-func (room *Room) RemoveClient(client *Client) (bool, error) {
-	for i, client := range room.Clients {
-		if room.IsClientIn(client) {
-			room.Clients = append(room.Clients[:i], room.Clients[i+1:]...)
-			return room.IsEmpty(), nil
+func (room *Room) RemoveClient(clientToRemove *Client) (bool, error) {
+	if room.IsClientIn(clientToRemove) {
+		for i, client := range room.Clients {
+			if client.Nickname == clientToRemove.Nickname {
+				room.Clients = append(room.Clients[:i], room.Clients[i+1:]...)
+				return room.IsEmpty(), nil
+			}
 		}
 	}
-	return room.IsEmpty(), errors.New("The client " + client.Nickname + " is not in the room " + room.Name)
+	return room.IsEmpty(), errors.New("The client " + clientToRemove.Nickname + " is not in the room " + room.Name)
 }
 
 // AddClient adds a client to the room
