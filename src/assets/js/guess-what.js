@@ -1,78 +1,99 @@
-function toDataURL(src, callback, outputFormat) {
-    var img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.onload = function () {
-        var canvas = document.createElement('CANVAS');
-        var ctx = canvas.getContext('2d');
-        var dataURL;
-        canvas.height = this.naturalHeight;
-        canvas.width = this.naturalWidth;
-        ctx.drawImage(this, 0, 0);
-        dataURL = canvas.toDataURL(outputFormat);
-        callback(dataURL);
+/*jslint browser this */
+/*global $ window URL WebSocket console */
+
+(function (global) {
+    "use strict";
+    var GuessWhat = function () {
+
     };
-    img.src = src;
-    if (img.complete || img.complete === undefined) {
-        img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
-        img.src = src;
-    }
-}
 
-function init () {
-    if (window["WebSocket"]) {
-        var conn = new WebSocket("ws://" + document.location.host + "/ws");
-        conn.onclose = function (evt) {
-            console.log("Socket closed");
-        };
-        conn.onmessage = function (evt) {
-            console.log(JSON.parse(evt.data));
-        };
+    GuessWhat.prototype.startEventListeners = function () {
+        this.changeNicknameButton.addEventListener("click", this.changeNickname.bind(this));
+        this.sendMessageButton.addEventListener("click", this.sendMessage.bind(this));
+        this.joinRoomButton.addEventListener("click", this.joinRoom.bind(this));
+        this.leaveRoomButton.addEventListener("click", this.leaveRoom.bind(this));
+    };
 
-        var imgSrc = "https://www.gravatar.com/avatar/d50c83cc0c6523b4d3f6085295c953e0";
+    GuessWhat.prototype.registerElements = function () {
+        this.changeNicknameButton = document.getElementById("change_nickname");
+        this.nicknameInput = document.getElementById("nickname");
+
+        this.sendMessageButton = document.getElementById("send_message");
+        this.messageInput = document.getElementById("message");
+
+        this.joinRoomButton = document.getElementById("join_room");
+        this.leaveRoomButton = document.getElementById("leave_room");
+        this.roomInput = document.getElementById("room");
+    };
+
+    GuessWhat.prototype.changeNickname = function () {
         var msg = JSON.stringify({
-            action: "message",
-            nickname: "boulou",
-            message: "Bonjour, je suis ",
-            x: "10",
-            y: "10"
+            action: "set_nickname",
+            nickname: this.nicknameInput.value
+        });
+        this.socket.send(msg);
+    };
 
+    GuessWhat.prototype.sendMessage = function () {
+        var msg = JSON.stringify({
+            action: "send_message",
+            content: this.messageInput.value
         });
-        document.getElementById("hw").addEventListener("click", function () {
-            conn.send(msg);
-        });
-        document.getElementById("change_nickname").addEventListener("click", function () {
-            var msg = JSON.stringify({
-                action: "set_nickname",
-                nickname: document.getElementById("nickname").value
-            });
-            conn.send(msg);
-        });
-        document.getElementById("send_message").addEventListener("click", function () {
-            var msg = JSON.stringify({
-                action: "send_message",
-                content: document.getElementById("message").value
-            });
-            conn.send(msg);
-        });
-        document.getElementById("join_room").addEventListener("click", function () {
-            var msg = JSON.stringify({
-                action: "join_room",
-                room: document.getElementById("room").value
-            });
-            conn.send(msg);
-        });
-        document.getElementById("leave_room").addEventListener("click", function () {
-            var msg = JSON.stringify({
-                action: "leave_room",
-                room: document.getElementById("room").value
-            });
-            conn.send(msg);
-        });
-    } else {
-        console.log("WEBSOCKET NOT SUPPORTED");
-    }
-}
+        this.socket.send(msg);
+    };
 
-document.addEventListener("DOMContentLoaded", function () {
-    init();
-});
+    GuessWhat.prototype.joinRoom = function () {
+        var msg = JSON.stringify({
+            action: "join_room",
+            room: this.roomInput.value
+        });
+        this.socket.send(msg);
+    };
+
+    GuessWhat.prototype.leaveRoom = function () {
+        var msg = JSON.stringify({
+            action: "leave_room",
+            room: this.roomInput.value
+        });
+        this.socket.send(msg);
+    };
+
+    GuessWhat.prototype.onMessage = function (e) {
+        console.log(JSON.parse(e.data));
+    };
+
+    GuessWhat.prototype.onClose = function (e) {
+        console.log("Socket closed");
+    };
+
+    GuessWhat.prototype.startSocket = function (cb) {
+        if (window["WebSocket"]) {
+            this.socket = new WebSocket("ws://" + document.location.host + "/ws");
+            this.socket.onclose = this.onClose;
+            this.socket.onmessage = this.onMessage;
+
+            return cb(false);
+        } else {
+            console.log("WEBSOCKET NOT SUPPORTED");
+            return cb(true);
+        }
+    };
+
+    GuessWhat.prototype.init = function () {
+        var self = this;
+        this.startSocket(function (err) {
+            if (err) {
+                return alert("Ca va pas marcher...");
+            }
+            self.registerElements();
+            self.startEventListeners();
+        });
+    };
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var GW = new GuessWhat();
+        GW.init();
+    });
+
+    global.GuessWhat = GuessWhat;
+}(this));
