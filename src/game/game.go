@@ -51,15 +51,6 @@ func (game *Game) AddRoom(name string) (interface{}, error) {
 	return nil, errors.New("The channel " + name + " already exist")
 }
 
-func (game *Game) isRoomExisting(name string) bool {
-	for _, room := range game.Rooms {
-		if room.Name == name {
-			return true
-		}
-	}
-	return false
-}
-
 // GetRoom returns the desired room. If not existing, creates it before.
 func (game *Game) GetRoom(name string) *Room {
 	if game.isRoomExisting(name) {
@@ -89,6 +80,27 @@ func (game *Game) AddMessage(sender *Client, content string) *Message {
 	game.Messages = append(game.Messages, message)
 
 	return message
+}
+
+// IsNicknameTaken return true if the given nickname already exists in the game
+func (game *Game) IsNicknameTaken(nicknameToTest string) bool {
+	for _, client := range game.Clients {
+		if client.Nickname == nicknameToTest {
+			return true
+		}
+	}
+	return false
+}
+
+// Privates methods
+
+func (game *Game) isRoomExisting(name string) bool {
+	for _, room := range game.Rooms {
+		if room.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 // DEBUG METHODS
