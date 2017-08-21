@@ -19,6 +19,8 @@ func parseMessage(client *game.Client, msg map[string]string) {
 		sendMessageAction(client, msg["content"])
 	case "join_room":
 		joinRoomAction(client, msg["room"])
+	case "leave_room":
+		leaveRoomAction(client, msg["room"])
 	}
 
 	myGame.ListClients()
