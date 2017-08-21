@@ -24,7 +24,6 @@ func onDisconnection(client *game.Client, err error) error {
 	log.Printf("Socket closed because of : %v", err)
 	myGame.RemoveClient(client)
 	if room := myGame.GetCurrentClientRoom(client); room != nil {
-
 		room.(*game.Room).RemoveClient(client)
 	}
 	myGame.ListClients()
@@ -35,17 +34,17 @@ func onDisconnection(client *game.Client, err error) error {
 }
 
 func setNicknameAction(client *game.Client, nickname string) {
-	msg := make(map[string]interface{})
-	msg["action"] = "set_nickname_cb"
-	msg["nickname"] = nickname
+	cbMsg := make(map[string]interface{})
+	cbMsg["action"] = "set_nickname_cb"
+	cbMsg["nickname"] = nickname
 
 	if !myGame.IsNicknameTaken(nickname) {
 		client.SetNickname(nickname)
-		msg["success"] = true
+		cbMsg["success"] = true
 	} else {
-		msg["success"] = false
+		cbMsg["success"] = false
 	}
-	client.Socket.SendToSocket(client.Socket, msg)
+	client.Socket.SendToSocket(client.Socket, cbMsg)
 }
 
 func sendMessageAction(client *game.Client, content string) {
@@ -63,6 +62,29 @@ func sendMessageAction(client *game.Client, content string) {
 		msgMap["action"] = "incoming_global_message"
 
 		client.Socket.SendToAll(myGame, msgMap)
+	}
+}
+
+func joinRoomAction(client *game.Client, roomName string) {
+	cbMsg := make(map[string]interface{})
+	cbMsg["action"] = "join_room_cb"
+	cbMsg["room"] = roomName
+
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "incoming_room_client"
+	updateMsg["room"] = roomName
+	updateMsg["client"] = client
+
+	room := myGame.GetRoom(roomName)
+	if err := room.AddClient(client); err != nil {
+		cbMsg["success"] = false
+		client.Socket.SendToSocket(client.Socket, cbMsg)
+	} else {
+		cbMsg["success"] = true
+		client.Socket.SendToSocket(client.Socket, cbMsg)
+		sendAllRoomMessagesTo(client, room)
+		sendAllRoomClientsTo(client, room)
+		client.Socket.BroadcastToRoom(room, updateMsg)
 	}
 }
 
@@ -94,21 +116,4 @@ func sendAllRoomClientsTo(client *game.Client, room *game.Room) {
 	clients["channel"] = room.Name
 	clients["clients"] = room.Clients
 	client.Socket.SendToSocket(client.Socket, clients)
-}
-
-func joinRoomAction(client *game.Client, roomName string) {
-	msg := make(map[string]interface{})
-	msg["action"] = "join_room_cb"
-	msg["room"] = roomName
-
-	room := myGame.GetRoom(roomName)
-	if err := room.AddClient(client); err != nil {
-		msg["success"] = false
-		client.Socket.SendToSocket(client.Socket, msg)
-	} else {
-		msg["success"] = true
-		client.Socket.SendToSocket(client.Socket, msg)
-		sendAllRoomMessagesTo(client, room)
-		sendAllRoomClientsTo(client, room)
-	}
 }
