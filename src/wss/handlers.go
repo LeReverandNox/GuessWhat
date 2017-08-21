@@ -10,9 +10,16 @@ import (
 
 func onConnection(ws *websocket.Conn) *game.Client {
 	client := myGame.AddClient(ws)
+	// Send everything the new client needs to know
 	sendAllGameMessagesTo(client)
 	sendAllGameClientsTo(client)
 	sendAllRoomsTo(client)
+
+	// Broadcast his arrival into the game to other clients
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "incoming_client"
+	updateMsg["client"] = client
+	client.Socket.Broadcast(myGame, updateMsg)
 
 	myGame.ListClients()
 	myGame.ListRooms()
@@ -25,8 +32,24 @@ func onDisconnection(client *game.Client, err error) error {
 	log.Printf("Socket closed because of : %v", err)
 	myGame.RemoveClient(client)
 	if room := myGame.GetCurrentClientRoom(client); room != nil {
-		room.(*game.Room).RemoveClient(client)
+		trueRoom := room.(*game.Room)
+		trueRoom.RemoveClient(client)
+		// Broadcast his departure from the channel to other clients
+		sendRoomDepartureToAll(client, trueRoom)
+
+		if trueRoom.IsEmpty() {
+			myGame.RemoveRoom(trueRoom)
+			// Tell everyone about the room suppression.
+			sendRoomDeletionToAll(client, trueRoom)
+		}
 	}
+
+	// Broadcast his departure from the game to other clients
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "leaving_client"
+	updateMsg["client"] = client
+	client.Socket.Broadcast(myGame, updateMsg)
+
 	myGame.ListClients()
 	myGame.ListRooms()
 	myGame.ListMessages()
@@ -67,25 +90,36 @@ func sendMessageAction(client *game.Client, content string) {
 }
 
 func joinRoomAction(client *game.Client, roomName string) {
+	room, isNew := myGame.GetRoom(roomName)
+
 	cbMsg := make(map[string]interface{})
 	cbMsg["action"] = "join_room_cb"
-	cbMsg["room"] = roomName
+	cbMsg["room"] = room
 
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "incoming_room_client"
-	updateMsg["room"] = roomName
+	updateMsg["room"] = room
 	updateMsg["client"] = client
 
-	room := myGame.GetRoom(roomName)
 	if err := room.AddClient(client); err != nil {
 		cbMsg["success"] = false
 		client.Socket.SendToSocket(client.Socket, cbMsg)
 	} else {
 		cbMsg["success"] = true
 		client.Socket.SendToSocket(client.Socket, cbMsg)
+		// If the channel just got created, broadcast it !
+		if isNew {
+			updateMsg := make(map[string]interface{})
+			updateMsg["action"] = "incoming_room"
+			updateMsg["room"] = room
+			client.Socket.Broadcast(myGame, updateMsg)
+		}
+		// Send to the client all the infos about the joined room.
 		sendAllRoomMessagesTo(client, room)
 		sendAllRoomClientsTo(client, room)
+		// Notify the others room clients the arrival of the client
 		client.Socket.BroadcastToRoom(room, updateMsg)
+
 	}
 }
 
@@ -124,4 +158,20 @@ func sendAllRoomsTo(client *game.Client) {
 	rooms["action"] = "incoming_all_rooms"
 	rooms["rooms"] = myGame.Rooms
 	client.Socket.SendToSocket(client.Socket, rooms)
+}
+
+func sendRoomDepartureToAll(client *game.Client, room *game.Room) {
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "leaving_room_client"
+	updateMsg["client"] = client
+	updateMsg["room"] = room
+	client.Socket.SendToRoom(room, updateMsg)
+}
+
+func sendRoomDeletionToAll(client *game.Client, room *game.Room) {
+
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "leaving_room"
+	updateMsg["room"] = room
+	client.Socket.SendToAll(myGame, updateMsg)
 }
