@@ -33,13 +33,17 @@ func onDisconnection(client *game.Client, err error) error {
 }
 
 func setNicknameAction(client *game.Client, nickname string) {
-	client.SetNickname(nickname)
-
 	msg := make(map[string]interface{})
-	// DEBUG
-	msg["message"] = "Je s'apelle " + client.Nickname
-	client.Socket.SendToAll(myGame, msg)
-	// DEBUG
+	msg["action"] = "set_nickname_cb"
+	msg["nickname"] = nickname
+
+	if !myGame.IsNicknameTaken(nickname) {
+		client.SetNickname(nickname)
+		msg["success"] = true
+	} else {
+		msg["success"] = false
+	}
+	client.Socket.SendToSocket(client.Socket, msg)
 }
 
 func sendMessageAction(client *game.Client, content string) {
@@ -57,12 +61,14 @@ func sendAllMessages(client *game.Client) {
 
 func joinRoomAction(client *game.Client, roomName string) {
 	msg := make(map[string]interface{})
+	msg["action"] = "join_room_cb"
+	msg["room"] = roomName
 
 	room := myGame.GetRoom(roomName)
 	if err := room.AddClient(client); err != nil {
-		msg["join_room_cb"] = false
+		msg["success"] = false
 	} else {
-		msg["join_room_cb"] = true
+		msg["success"] = true
 	}
 	client.Socket.SendToSocket(client.Socket, msg)
 }
