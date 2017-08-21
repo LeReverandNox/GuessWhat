@@ -4,8 +4,6 @@ import (
 	"errors"
 	"log"
 	"time"
-
-	"golang.org/x/net/websocket"
 )
 
 type Game struct {
@@ -25,8 +23,8 @@ func NewGame() *Game {
 }
 
 // AddClient adds a client to the game
-func (game *Game) AddClient(ws *websocket.Conn) *Client {
-	client := NewClient(ws)
+func (game *Game) AddClient(socket *Socket, nickname string) *Client {
+	client := NewClient(socket, nickname)
 	game.Clients = append(game.Clients, client)
 	return client
 
