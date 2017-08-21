@@ -57,7 +57,7 @@ function init () {
         document.getElementById("join_room").addEventListener("click", function () {
             var msg = JSON.stringify({
                 action: "join_room",
-                content: document.getElementById("room").value
+                room: document.getElementById("room").value
             });
             conn.send(msg);
         });
