@@ -10,6 +10,13 @@ type Socket struct {
 	Socket *websocket.Conn
 }
 
+// NewSocket return a new Socket.
+func NewSocket(ws *websocket.Conn) *Socket {
+	socket := Socket{}
+	socket.Socket = ws
+	return &socket
+}
+
 func (socket *Socket) Broadcast(game *Game, data map[string]interface{}) error {
 	for _, client := range game.Clients {
 		if client.Socket != socket {
