@@ -11,12 +11,24 @@ import (
 func onConnection(ws *websocket.Conn) *game.Client {
 	client := myGame.AddClient(ws)
 	sendAllMessages(client)
+	myGame.ListClients()
+	myGame.ListRooms()
+	myGame.ListMessages()
+
 	return client
 }
 
 func onDisconnection(client *game.Client, err error) error {
 	log.Printf("Socket closed because of : %v", err)
 	myGame.RemoveClient(client)
+	if room := myGame.GetCurrentClientRoom(client); room != nil {
+
+		room.(*game.Room).RemoveClient(client)
+	}
+	myGame.ListClients()
+	myGame.ListRooms()
+	myGame.ListMessages()
+
 	return nil
 }
 
@@ -31,7 +43,7 @@ func setNicknameAction(client *game.Client, nickname string) {
 }
 
 func sendMessageAction(client *game.Client, content string) {
-	msg := myGame.AddMessage(client.Nickname, content)
+	msg := myGame.AddMessage(client, content)
 	msgMap := structs.Map(msg)
 	client.Socket.SendToAll(myGame, msgMap)
 }
@@ -44,7 +56,6 @@ func sendAllMessages(client *game.Client) {
 }
 
 func joinRoomAction(client *game.Client, roomName string) {
-	log.Printf("%v veut rejoindre %v", client.Nickname, roomName)
 	msg := make(map[string]interface{})
 
 	room := myGame.GetRoom(roomName)
@@ -54,5 +65,4 @@ func joinRoomAction(client *game.Client, roomName string) {
 		msg["join_room_cb"] = true
 	}
 	client.Socket.SendToSocket(client.Socket, msg)
-	myGame.ListRooms()
 }
