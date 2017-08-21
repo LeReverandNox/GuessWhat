@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"log"
+	"time"
 
 	"golang.org/x/net/websocket"
 )
@@ -33,10 +34,13 @@ func (game *Game) AddClient(ws *websocket.Conn) *Client {
 
 // ListClients prints the list of clients in the game
 func (game *Game) ListClients() {
-	log.Printf("Voici les clients du serveur")
+	log.Println("Voici les clients du serveur")
 	for i, client := range game.Clients {
-		log.Printf("Client %v : %v", i, client.Nickname)
+		log.Println("")
+		log.Printf("Client %v : %v\n", i, client.Nickname)
+		log.Println("")
 	}
+	log.Println("...")
 }
 
 // RemoveClient remove a client from the game
@@ -82,9 +86,43 @@ func (game *Game) GetRoom(name string) *Room {
 
 // ListRooms lists the rooms of the game
 func (game *Game) ListRooms() {
-	log.Printf("Voici les rooms du serveur")
+	log.Println("Voici les rooms du serveur")
 	for i, room := range game.Rooms {
-		log.Printf("Room %v : %v", i, room.Name)
+		log.Println("")
+		log.Printf("Room %v : %v\n", i, room.Name)
 		room.ListClients()
+		log.Println("")
 	}
+	log.Println("...")
+}
+
+// GetCurrentClientRoom returns the current room of a client.
+func (game *Game) GetCurrentClientRoom(client *Client) interface{} {
+	for _, room := range game.Rooms {
+		if room.IsClientIn(client) {
+			return room
+		}
+	}
+	return nil
+}
+
+// AddMessage adds a message to the game
+func (game *Game) AddMessage(sender *Client, content string) *Message {
+	message := NewMessage(sender, content, time.Now())
+	game.Messages = append(game.Messages, message)
+
+	return message
+}
+
+// ListMessages lists the messages of the game
+func (game *Game) ListMessages() {
+	log.Println("Voici les messages du serveur")
+	for _, msg := range game.Messages {
+		log.Println("")
+		log.Printf("Content : %v\n", msg.Content)
+		log.Printf("Date : %v\n", msg.Date)
+		log.Printf("Sender : %v\n", msg.Sender.Nickname)
+		log.Println("")
+	}
+	log.Println("...")
 }
