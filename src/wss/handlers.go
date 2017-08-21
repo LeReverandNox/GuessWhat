@@ -74,20 +74,6 @@ func onDisconnection(client *game.Client, err error) error {
 	return nil
 }
 
-func setNicknameAction(client *game.Client, nickname string) {
-	cbMsg := make(map[string]interface{})
-	cbMsg["action"] = "set_nickname_cb"
-	cbMsg["nickname"] = nickname
-
-	if !myGame.IsNicknameTaken(nickname) {
-		client.SetNickname(nickname)
-		cbMsg["success"] = true
-	} else {
-		cbMsg["success"] = false
-	}
-	client.Socket.SendToSocket(client.Socket, cbMsg)
-}
-
 func sendMessageAction(client *game.Client, content string) {
 	if room := myGame.GetCurrentClientRoom(client); room != nil {
 		trueRoom := room.(*game.Room)
