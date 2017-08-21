@@ -62,6 +62,14 @@ func (room *Room) AddMessage(sender *Client, content string) *Message {
 	return message
 }
 
+// IsEmpty returns true if the room is empty.
+func (room *Room) IsEmpty() bool {
+	if len(room.Clients) == 0 {
+		return true
+	}
+	return false
+}
+
 // ListClients lists the clients of the room
 func (room *Room) ListClients() {
 	log.Println("Voici les clients de la channel")
