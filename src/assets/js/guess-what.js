@@ -5,6 +5,10 @@
     "use strict";
     var GuessWhat = function () {
         this.isConnected = false;
+        this.tool = {
+            color: "#000000",
+            thickness: 10
+        };
     };
 
     GuessWhat.prototype.startEventListeners = function () {
@@ -12,6 +16,10 @@
         this.sendMessageButton.addEventListener("click", this.sendMessage.bind(this));
         this.joinRoomButton.addEventListener("click", this.joinRoom.bind(this));
         this.leaveRoomButton.addEventListener("click", this.leaveRoom.bind(this));
+
+        this.canvas.addEventListener("mousedown", this.onLocalCanvasMouseDown.bind(this));
+        this.canvas.addEventListener("mousemove", this.onLocalCanvasMouseMove.bind(this));
+        this.canvas.addEventListener("mouseup", this.onLocalCanvasMouseUp.bind(this));
     };
 
     GuessWhat.prototype.registerElements = function () {
@@ -24,6 +32,9 @@
         this.joinRoomButton = document.getElementById("join_room");
         this.leaveRoomButton = document.getElementById("leave_room");
         this.roomInput = document.getElementById("room");
+
+        this.canvas = document.getElementById("canvas");
+        this.context = this.canvas.getContext("2d");
     };
 
     GuessWhat.prototype.connect = function () {
@@ -42,6 +53,9 @@
     };
 
     GuessWhat.prototype.sendMessage = function () {
+        if (!this.isConnected)
+            return false
+
         var msg = JSON.stringify({
             action: "send_message",
             content: this.messageInput.value
@@ -50,6 +64,9 @@
     };
 
     GuessWhat.prototype.joinRoom = function () {
+        if (!this.isConnected)
+            return false
+
         var msg = JSON.stringify({
             action: "join_room",
             room: this.roomInput.value
@@ -58,6 +75,9 @@
     };
 
     GuessWhat.prototype.leaveRoom = function () {
+        if (!this.isConnected)
+            return false
+
         var msg = JSON.stringify({
             action: "leave_room",
             room: this.roomInput.value
@@ -66,7 +86,21 @@
     };
 
     GuessWhat.prototype.onMessage = function (e) {
-        console.log(JSON.parse(e.data));
+        var data = JSON.parse(e.data)
+        // console.log(data);
+        var action = data.action;
+        switch (action) {
+            case "canvas_mouse_down":
+                this.onCanvasMouseDown(data)
+                break;
+            case "canvas_mouse_move":
+                this.onCanvasMouseMove(data)
+                break;
+            case "canvas_mouse_up":
+                this.onCanvasMouseUp(data)
+                break;
+
+        }
     };
 
     GuessWhat.prototype.onClose = function (e) {
@@ -74,18 +108,75 @@
         console.log("Socket closed");
     };
 
-    // GuessWhat.prototype.startSocket = function (cb) {
-    //     if (window["WebSocket"]) {
-    //         this.socket = new WebSocket("ws://" + document.location.host + "/ws?nickname=LOL");
-    //         this.socket.onclose = this.onClose;
-    //         this.socket.onmessage = this.onMessage;
+    GuessWhat.prototype.onLocalCanvasMouseDown = function (e) {
+        if (!this.isConnected)
+            return false
 
-    //         return cb(false);
-    //     } else {
-    //         console.log("WEBSOCKET NOT SUPPORTED");
-    //         return cb(true);
-    //     }
-    // };
+        var msg = JSON.stringify({
+            action: "canvas_mouse_down",
+            room: this.roomInput.value,
+            x: String(e.layerX),
+            y: String(e.layerY),
+            thickness: String(this.tool.thickness),
+            color: this.tool.color
+        });
+        this.socket.send(msg);
+    };
+    GuessWhat.prototype.onLocalCanvasMouseMove = function (e) {
+        if (!this.isConnected)
+            return false
+
+        var msg = JSON.stringify({
+            action: "canvas_mouse_move",
+            room: this.roomInput.value,
+            x: String(e.layerX),
+            y: String(e.layerY),
+            thickness: String(this.tool.thickness),
+            color: this.tool.color
+        });
+        this.socket.send(msg);
+    };
+    GuessWhat.prototype.onLocalCanvasMouseUp = function (e) {
+        if (!this.isConnected)
+            return false
+
+        var msg = JSON.stringify({
+            action: "canvas_mouse_up",
+            room: this.roomInput.value,
+            x: String(e.layerX),
+            y: String(e.layerY),
+            thickness: String(this.tool.thickness),
+            color: this.tool.color
+        });
+        this.socket.send(msg);
+    };
+
+    GuessWhat.prototype.onCanvasMouseDown = function (e) {
+        // console.log("Le socket nous dit de mousedown");
+        this.click1 = true;
+        this.context.beginPath();
+        this.context.moveTo(e.x, e.y);
+    };
+
+    GuessWhat.prototype.onCanvasMouseMove = function (e) {
+        // console.log("Le socket nous dit de mousemove");
+        if (this.click1 === true) {
+
+            this.context.lineCap = "round";
+            this.context.lineJoin = "round";
+            this.context.strokeStyle = e.color;
+            this.context.fillStyle = e.color;
+            this.context.lineWidth = e.thickness;
+
+            this.context.lineTo(e.x, e.y);
+            this.context.stroke();
+        }
+    };
+
+    GuessWhat.prototype.onCanvasMouseUp = function (e) {
+        // console.log("Le socket nous dit de mouseup");
+        this.click1 = false;
+    };
 
     GuessWhat.prototype.init = function () {
         var self = this;
