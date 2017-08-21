@@ -4,18 +4,18 @@
 (function (global) {
     "use strict";
     var GuessWhat = function () {
-
+        this.isConnected = false;
     };
 
     GuessWhat.prototype.startEventListeners = function () {
-        this.changeNicknameButton.addEventListener("click", this.changeNickname.bind(this));
+        this.connexionButton.addEventListener("click", this.connect.bind(this));
         this.sendMessageButton.addEventListener("click", this.sendMessage.bind(this));
         this.joinRoomButton.addEventListener("click", this.joinRoom.bind(this));
         this.leaveRoomButton.addEventListener("click", this.leaveRoom.bind(this));
     };
 
     GuessWhat.prototype.registerElements = function () {
-        this.changeNicknameButton = document.getElementById("change_nickname");
+        this.connexionButton = document.getElementById("connexion_button");
         this.nicknameInput = document.getElementById("nickname");
 
         this.sendMessageButton = document.getElementById("send_message");
@@ -26,12 +26,19 @@
         this.roomInput = document.getElementById("room");
     };
 
-    GuessWhat.prototype.changeNickname = function () {
-        var msg = JSON.stringify({
-            action: "set_nickname",
-            nickname: this.nicknameInput.value
-        });
-        this.socket.send(msg);
+    GuessWhat.prototype.connect = function () {
+        if (this.isConnected)
+            return false
+
+        var nickname = this.nicknameInput.value;
+        if (window["WebSocket"]) {
+            this.socket = new WebSocket("ws://" + document.location.host + "/ws?nickname=" + nickname);
+            this.socket.onclose = this.onClose.bind(this);
+            this.socket.onmessage = this.onMessage.bind(this);
+            this.isConnected = true;
+        } else {
+            console.log("WEBSOCKET NOT SUPPORTED");
+        }
     };
 
     GuessWhat.prototype.sendMessage = function () {
@@ -63,31 +70,27 @@
     };
 
     GuessWhat.prototype.onClose = function (e) {
+        this.isConnected = false;
         console.log("Socket closed");
     };
 
-    GuessWhat.prototype.startSocket = function (cb) {
-        if (window["WebSocket"]) {
-            this.socket = new WebSocket("ws://" + document.location.host + "/ws");
-            this.socket.onclose = this.onClose;
-            this.socket.onmessage = this.onMessage;
+    // GuessWhat.prototype.startSocket = function (cb) {
+    //     if (window["WebSocket"]) {
+    //         this.socket = new WebSocket("ws://" + document.location.host + "/ws?nickname=LOL");
+    //         this.socket.onclose = this.onClose;
+    //         this.socket.onmessage = this.onMessage;
 
-            return cb(false);
-        } else {
-            console.log("WEBSOCKET NOT SUPPORTED");
-            return cb(true);
-        }
-    };
+    //         return cb(false);
+    //     } else {
+    //         console.log("WEBSOCKET NOT SUPPORTED");
+    //         return cb(true);
+    //     }
+    // };
 
     GuessWhat.prototype.init = function () {
         var self = this;
-        this.startSocket(function (err) {
-            if (err) {
-                return alert("Ca va pas marcher...");
-            }
-            self.registerElements();
-            self.startEventListeners();
-        });
+        this.registerElements();
+        this.startEventListeners();
     };
 
     document.addEventListener("DOMContentLoaded", function () {
