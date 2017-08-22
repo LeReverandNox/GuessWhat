@@ -43,6 +43,7 @@ func onConnection(ws *websocket.Conn) (*game.Client, error) {
 	myGame.ListClients()
 	myGame.ListRooms()
 	myGame.ListMessages()
+	myGame.ListWords()
 
 	return client, nil
 }
