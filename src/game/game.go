@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/LeReverandNox/GuessWhat/src/tools"
@@ -122,6 +123,10 @@ func (game *Game) AddWord(wordStr string) *Word {
 	game.Words = append(game.Words, word)
 
 	return word
+}
+
+func (game *Game) PickRandomWord() *Word {
+	return game.Words[rand.Intn(len(game.Words))]
 }
 
 // Privates methods
