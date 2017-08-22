@@ -16,6 +16,7 @@
         this.sendMessageButton.addEventListener("click", this.sendMessage.bind(this));
         this.joinRoomButton.addEventListener("click", this.joinRoom.bind(this));
         this.leaveRoomButton.addEventListener("click", this.leaveRoom.bind(this));
+        this.startRoomButton.addEventListener("click", this.startRoom.bind(this));
 
         this.canvas.addEventListener("mousedown", this.onLocalCanvasMouseDown.bind(this));
         this.canvas.addEventListener("mousemove", this.onLocalCanvasMouseMove.bind(this));
@@ -32,6 +33,7 @@
 
         this.joinRoomButton = document.getElementById("join_room");
         this.leaveRoomButton = document.getElementById("leave_room");
+        this.startRoomButton = document.getElementById("start_room");
         this.roomInput = document.getElementById("room");
 
         this.canvas = document.getElementById("canvas");
@@ -81,6 +83,17 @@
 
         var msg = JSON.stringify({
             action: "leave_room",
+            room: this.roomInput.value
+        });
+        this.socket.send(msg);
+    };
+
+    GuessWhat.prototype.startRoom = function () {
+        if (!this.isConnected)
+            return false
+
+        var msg = JSON.stringify({
+            action: "start_room",
             room: this.roomInput.value
         });
         this.socket.send(msg);
