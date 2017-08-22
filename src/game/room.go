@@ -3,16 +3,19 @@ package game
 import (
 	"errors"
 	"log"
+	"math/rand"
 	"time"
 )
 
 type Room struct {
-	Name     string
-	Messages []*Message
-	Clients  []*Client
-	Drawer   *Client
-	Owner    *Client
-	Image    string
+	Name      string
+	Messages  []*Message
+	Clients   []*Client
+	Drawer    *Client
+	Owner     *Client
+	Image     string
+	Word      *Word
+	IsStarted bool
 }
 
 // NewRoom creates a new room and returns it
@@ -22,6 +25,7 @@ func NewRoom(name string, owner *Client) *Room {
 	room.Clients = make([]*Client, 0)
 	room.Messages = make([]*Message, 0)
 	room.Owner = owner
+	room.IsStarted = false
 	return &room
 }
 
@@ -71,6 +75,33 @@ func (room *Room) IsEmpty() bool {
 		return true
 	}
 	return false
+}
+
+func (room *Room) IsOwner(client *Client) bool {
+	if client.Nickname == room.Owner.Nickname {
+		return true
+	}
+	return false
+}
+
+func (room *Room) Start() {
+	room.IsStarted = true
+}
+
+func (room *Room) GetNbClients() int {
+	return len(room.Clients)
+}
+
+func (room *Room) SetWord(word *Word) {
+	room.Word = word
+}
+
+func (room *Room) SetDrawer(drawer *Client) {
+	room.Drawer = drawer
+}
+
+func (room *Room) PickRandomClient() *Client {
+	return room.Clients[rand.Intn(len(room.Clients))]
 }
 
 // ListClients lists the clients of the room
