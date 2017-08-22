@@ -20,7 +20,7 @@
         this.canvas.addEventListener("mousedown", this.onLocalCanvasMouseDown.bind(this));
         this.canvas.addEventListener("mousemove", this.onLocalCanvasMouseMove.bind(this));
         this.canvas.addEventListener("mouseup", this.onLocalCanvasMouseUp.bind(this));
-        this.canvas.addEventListener("mouseout", this.onLocalCanvasMouseUp.bind(this));
+        this.canvas.addEventListener("mouseout", this.onLocalCanvasMouseOut.bind(this));
     };
 
     GuessWhat.prototype.registerElements = function () {
@@ -157,6 +157,28 @@
             color: this.tool.color
         });
         this.socket.send(msg);
+    };
+    GuessWhat.prototype.onLocalCanvasMouseOut = function (e) {
+        if (!this.isConnected)
+            return false
+        if (!this.localClick1)
+            return false
+
+        var clean = function () {
+            document.removeEventListener("mouseup", mouseUpHandler);
+            this.canvas.removeEventListener("mouseenter", mouseEnterHandler);
+        };
+        var mouseUpHandler = function () {
+            clean.call(this);
+            this.onLocalCanvasMouseUp(e);
+
+        };
+        var mouseEnterHandler = function () {
+            clean.call(this);
+        };
+
+        document.addEventListener("mouseup", mouseUpHandler.bind(this));
+        this.canvas.addEventListener("mouseenter", mouseEnterHandler.bind(this));
     };
 
     GuessWhat.prototype.onCanvasMouseDown = function (e) {
