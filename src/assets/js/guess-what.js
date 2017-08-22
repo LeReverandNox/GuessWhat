@@ -205,6 +205,10 @@
         this.click1 = false;
     };
 
+    GuessWhat.prototype.cleanCanvas = function () {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    };
+
     GuessWhat.prototype.init = function () {
         var self = this;
         this.registerElements();
