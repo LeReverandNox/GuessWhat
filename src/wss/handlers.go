@@ -197,6 +197,59 @@ func canvasMouseUpAction(client *game.Client, msg map[string]string) {
 	client.Socket.SendToRoom(room, updateMsg)
 }
 
+func startRoomAction(client *game.Client, msg map[string]string) {
+	roomName := msg["room"]
+
+	cbMsg := make(map[string]interface{})
+	cbMsg["action"] = "start_room_cb"
+
+	if !myGame.IsRoomExisting(roomName) {
+		cbMsg["room"] = roomName
+		cbMsg["success"] = false
+		cbMsg["reason"] = "This room doesn't exists."
+		client.Socket.SendToSocket(client.Socket, cbMsg)
+	} else {
+		room, _ := myGame.GetRoom(msg["room"], client)
+
+		cbMsg["room"] = room
+
+		if !room.IsOwner(client) {
+			cbMsg["success"] = false
+			cbMsg["reason"] = "You are not the owner of this room."
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+		} else if room.IsStarted {
+			cbMsg["success"] = false
+			cbMsg["reason"] = "This room is already started."
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+		} else if room.GetNbClients() < 2 {
+			cbMsg["success"] = false
+			cbMsg["reason"] = "You have to be at least 2 players to start a room."
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+		} else {
+			room.Start()
+
+			// BOUCLE DEBUT JEU
+			// Pick and set random drawer
+			drawer := room.PickRandomClient()
+			room.SetDrawer(drawer)
+			// Pick and set random word
+			word := myGame.PickRandomWord()
+			room.SetWord(word)
+			// Start timer
+			// BOUCLE FIN JEU
+
+			// Send to room clients about it's state
+			updateMsg := make(map[string]interface{})
+			updateMsg["action"] = "room_start"
+			updateMsg["room"] = room
+			client.Socket.SendToRoom(room, updateMsg)
+
+			cbMsg["success"] = true
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+		}
+	}
+}
+
 func sendAllGameMessagesTo(client *game.Client) {
 	messages := make(map[string]interface{})
 	messages["action"] = "incoming_all_global_message"
