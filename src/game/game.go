@@ -55,9 +55,9 @@ func (game *Game) RemoveRoom(roomToDelete *Room) {
 }
 
 // AddRoom adds a room to the server
-func (game *Game) AddRoom(name string) (interface{}, error) {
+func (game *Game) AddRoom(name string, owner *Client) (interface{}, error) {
 	if !game.isRoomExisting(name) {
-		room := NewRoom(name)
+		room := NewRoom(name, owner)
 		game.Rooms = append(game.Rooms, room)
 		return room, nil
 	}
@@ -65,7 +65,7 @@ func (game *Game) AddRoom(name string) (interface{}, error) {
 }
 
 // GetRoom returns the desired room. If not existing, creates it before.
-func (game *Game) GetRoom(name string) (*Room, bool) {
+func (game *Game) GetRoom(name string, client *Client) (*Room, bool) {
 	if game.isRoomExisting(name) {
 		for _, room := range game.Rooms {
 			if room.Name == name {
@@ -73,7 +73,7 @@ func (game *Game) GetRoom(name string) (*Room, bool) {
 			}
 		}
 	}
-	room, _ := game.AddRoom(name)
+	room, _ := game.AddRoom(name, client)
 	return room.(*Room), true
 }
 
@@ -178,6 +178,7 @@ func (game *Game) ListRooms() {
 	for i, room := range game.Rooms {
 		log.Println("")
 		log.Printf("Room %v : %v\n", i, room.Name)
+		log.Printf("Owner %v : %v\n", i, room.Owner.Nickname)
 		room.ListClients()
 		log.Println("")
 	}

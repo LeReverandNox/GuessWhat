@@ -11,16 +11,17 @@ type Room struct {
 	Messages []*Message
 	Clients  []*Client
 	Drawer   *Client
+	Owner    *Client
 	Image    string
 }
 
 // NewRoom creates a new room and returns it
-func NewRoom(name string) *Room {
+func NewRoom(name string, owner *Client) *Room {
 	room := Room{}
 	room.Name = name
 	room.Clients = make([]*Client, 0)
 	room.Messages = make([]*Message, 0)
-
+	room.Owner = owner
 	return &room
 }
 

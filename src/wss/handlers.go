@@ -96,7 +96,7 @@ func sendMessageAction(client *game.Client, content string) {
 }
 
 func joinRoomAction(client *game.Client, roomName string) {
-	room, isNew := myGame.GetRoom(roomName)
+	room, isNew := myGame.GetRoom(roomName, client)
 
 	cbMsg := make(map[string]interface{})
 	cbMsg["action"] = "join_room_cb"
@@ -134,7 +134,7 @@ func joinRoomAction(client *game.Client, roomName string) {
 }
 
 func leaveRoomAction(client *game.Client, roomName string) {
-	room, _ := myGame.GetRoom(roomName)
+	room, _ := myGame.GetRoom(roomName, client)
 
 	cbMsg := make(map[string]interface{})
 	cbMsg["action"] = "leave_room_cb"
@@ -159,7 +159,7 @@ func leaveRoomAction(client *game.Client, roomName string) {
 }
 
 func canvasMouseDownAction(client *game.Client, msg map[string]string) {
-	room, _ := myGame.GetRoom(msg["room"])
+	room, _ := myGame.GetRoom(msg["room"], client)
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "canvas_mouse_down"
 	updateMsg["client"] = client
@@ -172,7 +172,7 @@ func canvasMouseDownAction(client *game.Client, msg map[string]string) {
 }
 
 func canvasMouseMoveAction(client *game.Client, msg map[string]string) {
-	room, _ := myGame.GetRoom(msg["room"])
+	room, _ := myGame.GetRoom(msg["room"], client)
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "canvas_mouse_move"
 	updateMsg["client"] = client
@@ -185,7 +185,7 @@ func canvasMouseMoveAction(client *game.Client, msg map[string]string) {
 }
 
 func canvasMouseUpAction(client *game.Client, msg map[string]string) {
-	room, _ := myGame.GetRoom(msg["room"])
+	room, _ := myGame.GetRoom(msg["room"], client)
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "canvas_mouse_up"
 	updateMsg["client"] = client
