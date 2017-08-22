@@ -107,8 +107,13 @@ func joinRoomAction(client *game.Client, roomName string) {
 	updateMsg["room"] = room
 	updateMsg["client"] = client
 
-	if err := room.AddClient(client); err != nil {
+	if currRoom := myGame.GetCurrentClientRoom(client); currRoom != nil && currRoom != room {
 		cbMsg["success"] = false
+		cbMsg["reason"] = "You can only be in one room at a time."
+		client.Socket.SendToSocket(client.Socket, cbMsg)
+	} else if err := room.AddClient(client); err != nil {
+		cbMsg["success"] = false
+		cbMsg["reason"] = "You are already in this room."
 		client.Socket.SendToSocket(client.Socket, cbMsg)
 	} else {
 		cbMsg["success"] = true
@@ -125,7 +130,6 @@ func joinRoomAction(client *game.Client, roomName string) {
 		sendAllRoomClientsTo(client, room)
 		// Notify the others room clients the arrival of the client
 		client.Socket.BroadcastToRoom(room, updateMsg)
-
 	}
 }
 
