@@ -21,6 +21,9 @@ func NewGame() *Game {
 	game.Clients = make([]*Client, 0)
 	game.Rooms = make([]*Room, 0)
 	game.Messages = make([]*Message, 0)
+	game.Words = make([]*Word, 0)
+
+	game.loadWordsFromFile("./assets/words.txt")
 
 	return &game
 }
@@ -119,6 +122,31 @@ func (game *Game) AddWord(wordStr string) *Word {
 func (game *Game) isRoomExisting(name string) bool {
 	for _, room := range game.Rooms {
 		if room.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+func (game *Game) loadWordsFromFile(path string) {
+	lines, err := tools.ReadLines(path)
+	if err != nil {
+		log.Fatalf("Error when loading Game words : %s\n", err)
+	}
+	for _, line := range lines {
+		trimmedLine := tools.RemoveAllSpaces(line)
+		if !game.isWordIn(trimmedLine) {
+			game.AddWord(trimmedLine)
+		}
+	}
+	if len(game.Words) < 1 {
+		log.Fatalf("Error when loading Game words : The file must contain at least one (unique) word.")
+	}
+}
+
+func (game *Game) isWordIn(wordToSearch string) bool {
+	for _, word := range game.Words {
+		if word.Value == wordToSearch {
 			return true
 		}
 	}
