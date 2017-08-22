@@ -108,10 +108,17 @@ func (game *Game) IsNicknameTaken(nicknameToTest string) bool {
 // AddWord adds a word to the game
 func (game *Game) AddWord(wordStr string) *Word {
 	trimmedString := tools.RemoveAllSpaces(wordStr)
-	if len(wordStr) < 0 {
+	loweredString := tools.ToLowerCase(trimmedString)
+	if len(loweredString) < 0 {
 		return nil
 	}
-	word := NewWord(trimmedString)
+	if game.isWordIn(loweredString) {
+		return nil
+	}
+	if !tools.IsAlphaHyphen(loweredString) {
+		return nil
+	}
+	word := NewWord(loweredString)
 	game.Words = append(game.Words, word)
 
 	return word
@@ -134,10 +141,7 @@ func (game *Game) loadWordsFromFile(path string) {
 		log.Fatalf("Error when loading Game words : %s\n", err)
 	}
 	for _, line := range lines {
-		trimmedLine := tools.RemoveAllSpaces(line)
-		if !game.isWordIn(trimmedLine) {
-			game.AddWord(trimmedLine)
-		}
+		game.AddWord(line)
 	}
 	if len(game.Words) < 1 {
 		log.Fatalf("Error when loading Game words : The file must contain at least one (unique) word.")
