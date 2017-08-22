@@ -20,6 +20,7 @@
         this.canvas.addEventListener("mousedown", this.onLocalCanvasMouseDown.bind(this));
         this.canvas.addEventListener("mousemove", this.onLocalCanvasMouseMove.bind(this));
         this.canvas.addEventListener("mouseup", this.onLocalCanvasMouseUp.bind(this));
+        this.canvas.addEventListener("mouseout", this.onLocalCanvasMouseUp.bind(this));
     };
 
     GuessWhat.prototype.registerElements = function () {
@@ -113,6 +114,7 @@
         if (!this.isConnected)
             return false
 
+        this.localClick1 = true;
         var msg = JSON.stringify({
             action: "canvas_mouse_down",
             room: this.roomInput.value,
@@ -125,6 +127,8 @@
     };
     GuessWhat.prototype.onLocalCanvasMouseMove = function (e) {
         if (!this.isConnected)
+            return false
+        if (!this.localClick1)
             return false
 
         var msg = JSON.stringify({
@@ -140,7 +144,10 @@
     GuessWhat.prototype.onLocalCanvasMouseUp = function (e) {
         if (!this.isConnected)
             return false
+        if (!this.localClick1)
+            return false
 
+        this.localClick1 = false;
         var msg = JSON.stringify({
             action: "canvas_mouse_up",
             room: this.roomInput.value,
