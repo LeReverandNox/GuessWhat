@@ -4,12 +4,15 @@ import (
 	"errors"
 	"log"
 	"time"
+
+	"github.com/LeReverandNox/GuessWhat/src/tools"
 )
 
 type Game struct {
 	Clients  []*Client
 	Rooms    []*Room
 	Messages []*Message
+	Words    []*Word
 }
 
 // NewGame creates a new Game struct, and returns it
@@ -99,6 +102,18 @@ func (game *Game) IsNicknameTaken(nicknameToTest string) bool {
 	return false
 }
 
+// AddWord adds a word to the game
+func (game *Game) AddWord(wordStr string) *Word {
+	trimmedString := tools.RemoveAllSpaces(wordStr)
+	if len(wordStr) < 0 {
+		return nil
+	}
+	word := NewWord(trimmedString)
+	game.Words = append(game.Words, word)
+
+	return word
+}
+
 // Privates methods
 
 func (game *Game) isRoomExisting(name string) bool {
@@ -143,6 +158,18 @@ func (game *Game) ListClients() {
 	for i, client := range game.Clients {
 		log.Println("")
 		log.Printf("Client %v : %v\n", i, client.Nickname)
+		log.Println("")
+	}
+	log.Println("...")
+}
+
+// ListWords prints the list of words in the game
+func (game *Game) ListWords() {
+	log.Println("Voici les words du serveur")
+	for i, word := range game.Words {
+		log.Println("")
+		log.Printf("Word %v : %v\n", i, word.Value)
+		log.Printf("Length of Word %v : %v\n", i, word.Length)
 		log.Println("")
 	}
 	log.Println("...")
