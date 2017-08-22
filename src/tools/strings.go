@@ -1,6 +1,9 @@
 package tools
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 // RemoveAllSpaces removes all spaces of a given string.
 func RemoveAllSpaces(str string) string {
@@ -8,4 +11,15 @@ func RemoveAllSpaces(str string) string {
 	trimmedString := rgx.ReplaceAllString(str, "")
 
 	return trimmedString
+}
+
+func ToLowerCase(str string) string {
+	return strings.ToLower(str)
+}
+
+func IsAlphaHyphen(str string) bool {
+	rgx, _ := regexp.Compile("^[a-zA-Z]+(-?)+[a-zA-Z]+$")
+	isMatching := rgx.MatchString(str)
+
+	return isMatching
 }
