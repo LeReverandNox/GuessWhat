@@ -87,7 +87,6 @@
 
     GuessWhat.prototype.onMessage = function (e) {
         var data = JSON.parse(e.data)
-        // console.log(data);
         var action = data.action;
         switch (action) {
             case "canvas_mouse_down":
@@ -99,7 +98,9 @@
             case "canvas_mouse_up":
                 this.onCanvasMouseUp(data)
                 break;
-
+            default:
+                console.log(data);
+                break;
         }
     };
 
@@ -152,14 +153,12 @@
     };
 
     GuessWhat.prototype.onCanvasMouseDown = function (e) {
-        // console.log("Le socket nous dit de mousedown");
         this.click1 = true;
         this.context.beginPath();
         this.context.moveTo(e.x, e.y);
     };
 
     GuessWhat.prototype.onCanvasMouseMove = function (e) {
-        // console.log("Le socket nous dit de mousemove");
         if (this.click1 === true) {
 
             this.context.lineCap = "round";
@@ -174,7 +173,6 @@
     };
 
     GuessWhat.prototype.onCanvasMouseUp = function (e) {
-        // console.log("Le socket nous dit de mouseup");
         this.click1 = false;
     };
 
