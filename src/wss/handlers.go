@@ -134,28 +134,34 @@ func joinRoomAction(client *game.Client, roomName string) {
 }
 
 func leaveRoomAction(client *game.Client, roomName string) {
-	room, _ := myGame.GetRoom(roomName, client)
-
 	cbMsg := make(map[string]interface{})
 	cbMsg["action"] = "leave_room_cb"
-	cbMsg["room"] = room
 
-	isEmpty, err := room.RemoveClient(client)
-	if err != nil {
+	if !myGame.IsRoomExisting(roomName) {
+		cbMsg["room"] = roomName
 		cbMsg["success"] = false
+		cbMsg["reason"] = "This room doesn't exists."
 		client.Socket.SendToSocket(client.Socket, cbMsg)
 	} else {
-		cbMsg["success"] = true
-		client.Socket.SendToSocket(client.Socket, cbMsg)
-		// Broadcast his departure from the channel to other clients
-		sendRoomDepartureToAll(client, room)
-		if isEmpty {
-			myGame.RemoveRoom(room)
-			// Tell everyone about the room suppression.
-			sendRoomDeletionToAll(client, room)
+		room, _ := myGame.GetRoom(roomName, client)
+		cbMsg["room"] = room
+
+		isEmpty, err := room.RemoveClient(client)
+		if err != nil {
+			cbMsg["success"] = false
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+		} else {
+			cbMsg["success"] = true
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+			// Broadcast his departure from the channel to other clients
+			sendRoomDepartureToAll(client, room)
+			if isEmpty {
+				myGame.RemoveRoom(room)
+				// Tell everyone about the room suppression.
+				sendRoomDeletionToAll(client, room)
+			}
 		}
 	}
-
 }
 
 func canvasMouseDownAction(client *game.Client, msg map[string]string) {
@@ -209,7 +215,7 @@ func startRoomAction(client *game.Client, msg map[string]string) {
 		cbMsg["reason"] = "This room doesn't exists."
 		client.Socket.SendToSocket(client.Socket, cbMsg)
 	} else {
-		room, _ := myGame.GetRoom(msg["room"], client)
+		room, _ := myGame.GetRoom(roomName, client)
 
 		cbMsg["room"] = room
 
