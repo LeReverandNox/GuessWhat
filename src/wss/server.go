@@ -26,7 +26,7 @@ func parseMessage(client *game.Client, msg map[string]string) {
 	case "canvas_mouse_up":
 		canvasMouseUpAction(client, msg)
 	case "start_room":
-		startRoomAction(client, msg)
+		startRoomAction(client, msg["room"])
 	}
 
 	myGame.ListClients()

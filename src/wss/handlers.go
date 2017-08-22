@@ -203,9 +203,7 @@ func canvasMouseUpAction(client *game.Client, msg map[string]string) {
 	client.Socket.SendToRoom(room, updateMsg)
 }
 
-func startRoomAction(client *game.Client, msg map[string]string) {
-	roomName := msg["room"]
-
+func startRoomAction(client *game.Client, roomName string) {
 	cbMsg := make(map[string]interface{})
 	cbMsg["action"] = "start_room_cb"
 
