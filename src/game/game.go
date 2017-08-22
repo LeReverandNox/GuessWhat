@@ -57,7 +57,7 @@ func (game *Game) RemoveRoom(roomToDelete *Room) {
 
 // AddRoom adds a room to the server
 func (game *Game) AddRoom(name string, owner *Client) (interface{}, error) {
-	if !game.isRoomExisting(name) {
+	if !game.IsRoomExisting(name) {
 		room := NewRoom(name, owner)
 		game.Rooms = append(game.Rooms, room)
 		return room, nil
@@ -67,7 +67,7 @@ func (game *Game) AddRoom(name string, owner *Client) (interface{}, error) {
 
 // GetRoom returns the desired room. If not existing, creates it before.
 func (game *Game) GetRoom(name string, client *Client) (*Room, bool) {
-	if game.isRoomExisting(name) {
+	if game.IsRoomExisting(name) {
 		for _, room := range game.Rooms {
 			if room.Name == name {
 				return room, false
@@ -129,9 +129,7 @@ func (game *Game) PickRandomWord() *Word {
 	return game.Words[rand.Intn(len(game.Words))]
 }
 
-// Privates methods
-
-func (game *Game) isRoomExisting(name string) bool {
+func (game *Game) IsRoomExisting(name string) bool {
 	for _, room := range game.Rooms {
 		if room.Name == name {
 			return true
