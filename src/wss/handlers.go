@@ -3,6 +3,7 @@ package wss
 import (
 	"errors"
 	"log"
+	"time"
 
 	"github.com/LeReverandNox/GuessWhat/src/tools"
 
@@ -102,7 +103,7 @@ func sendMessageAction(client *game.Client, content string) {
 			msgMap["channel"] = trueRoom.Name
 			client.Socket.SendToRoom(trueRoom, msgMap)
 
-			if trueRoom.IsStarted && client.Nickname != trueRoom.Drawer.Nickname {
+			if trueRoom.IsRoundGoing && client.Nickname != trueRoom.Drawer.Nickname {
 				parseForAnswer(client, trueRoom, msg)
 			}
 		} else {
@@ -152,7 +153,7 @@ func joinRoomAction(client *game.Client, roomName string) {
 			sendAllRoomClientsTo(client, room)
 
 			// Send the current image to the client if the room is started
-			if room.IsStarted {
+			if room.IsRoundGoing {
 				room.AddDrawingNeeder(client)
 				askDrawerForImage(room)
 			}
@@ -200,7 +201,7 @@ func canvasMouseDownAction(client *game.Client, msg map[string]string) {
 	roomName := msg["room"]
 	if myGame.IsRoomExisting(roomName) {
 		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsStarted && room.Drawer.Nickname == client.Nickname {
+		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
 			updateMsg := make(map[string]interface{})
 			updateMsg["action"] = "canvas_mouse_down"
 			updateMsg["client"] = client
@@ -218,7 +219,7 @@ func canvasMouseMoveAction(client *game.Client, msg map[string]string) {
 	roomName := msg["room"]
 	if myGame.IsRoomExisting(roomName) {
 		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsStarted && room.Drawer.Nickname == client.Nickname {
+		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
 			updateMsg := make(map[string]interface{})
 			updateMsg["action"] = "canvas_mouse_move"
 			updateMsg["client"] = client
@@ -284,7 +285,7 @@ func sendImageAction(client *game.Client, msg map[string]string) {
 	roomName := msg["room"]
 	if myGame.IsRoomExisting(roomName) {
 		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsStarted && room.Drawer.Nickname == client.Nickname {
+		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
 			room.SetImage(msg["image"])
 			for _, clientToSendTo := range room.NeedingDrawing {
 				log.Printf("On va envoyer l'image à %v", clientToSendTo.Nickname)
@@ -318,12 +319,16 @@ func startRound(client *game.Client, room *game.Room) {
 	word := myGame.PickRandomWord()
 	room.SetWord(word)
 	// TODO: Start timer
+	room.ResetImage()
+	room.IncrementRound()
+	room.StartRound()
 
 	// Send to room clients about it's state
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "new_round_start"
 	updateMsg["room"] = room
 	updateMsg["drawer"] = drawer
+	updateMsg["word"] = room.Word.Value
 	client.Socket.SendToRoom(room, updateMsg)
 }
 
@@ -331,6 +336,9 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "round_end"
 	updateMsg["room"] = room
+
+	room.StopRound()
+
 	switch reason {
 	case "WIN":
 		log.Printf("%v a gagné", client.Nickname)
@@ -342,11 +350,15 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 		// ENVOYER LA MISE A JOUR DES CLIENTS
 	}
 
-	// ATTENDRE X SECONDES
-	// SI AU MOINS 2 CLIENTS
-	// startRound()
-	// SINON
-	// stop room
+	// Wait a moment, so clients can see score and stuff.
+	time.Sleep(5 * time.Second)
+
+	if room.GetNbClients() >= 2 && room.ActualRound < room.TotalRounds {
+		startRound(client, room)
+	} else {
+
+		// stop room
+	}
 }
 
 func askDrawerForImage(room *game.Room) {
