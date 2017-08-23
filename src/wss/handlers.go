@@ -308,6 +308,28 @@ func startRound(client *game.Client, room *game.Room) {
 	client.Socket.SendToRoom(room, updateMsg)
 }
 
+func endRound(client *game.Client, room *game.Room, reason string) {
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "round_end"
+	updateMsg["room"] = room
+	switch reason {
+	case "WIN":
+		log.Printf("%v a gagné", client.Nickname)
+		updateMsg["winner"] = client
+		updateMsg["reason"] = "WIN"
+		client.Socket.SendToRoom(room, updateMsg)
+
+		// ATTRIUBER LES POINTS
+		// ENVOYER LA MISE A JOUR DES CLIENTS
+	}
+
+	// ATTENDRE X SECONDES
+	// SI AU MOINS 2 CLIENTS
+	// startRound()
+	// SINON
+	// stop room
+}
+
 func askDrawerForImage(room *game.Room) {
 	updateMsg := make(map[string]interface{})
 	updateMsg["action"] = "ask_for_image"
