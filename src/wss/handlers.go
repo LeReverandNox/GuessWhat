@@ -17,16 +17,26 @@ func onConnection(ws *websocket.Conn) (*game.Client, error) {
 
 	cbMsg := make(map[string]interface{})
 	cbMsg["action"] = "connexion_cb"
-	cbMsg["nickname"] = nickname
+	sanitizedNickname := tools.Sanitize(nickname)
+	cbMsg["nickname"] = sanitizedNickname
 
-	if myGame.IsNicknameTaken(nickname) {
+	if len(sanitizedNickname) < 1 {
 		cbMsg["client"] = nil
+		cbMsg["reason"] = "This nickname is too short."
 		cbMsg["success"] = false
 		socket.SendToSocket(socket, cbMsg)
-		return nil, errors.New("This nickname is already taken")
+		return nil, errors.New("This nickname is too short.")
 	}
 
-	client := myGame.AddClient(socket, nickname)
+	if myGame.IsNicknameTaken(sanitizedNickname) {
+		cbMsg["client"] = nil
+		cbMsg["success"] = false
+		cbMsg["reason"] = "This nickname is already taken."
+		socket.SendToSocket(socket, cbMsg)
+		return nil, errors.New("This nickname is already taken.")
+	}
+
+	client := myGame.AddClient(socket, sanitizedNickname)
 	cbMsg["client"] = client
 	cbMsg["success"] = true
 	socket.SendToSocket(socket, cbMsg)
