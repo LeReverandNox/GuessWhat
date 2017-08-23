@@ -1,9 +1,10 @@
 package game
 
 import (
+	"crypto/rand"
 	"errors"
 	"log"
-	"math/rand"
+	"math/big"
 	"time"
 )
 
@@ -102,7 +103,13 @@ func (room *Room) SetDrawer(drawer *Client) {
 }
 
 func (room *Room) PickRandomClient() *Client {
-	return room.Clients[rand.Intn(len(room.Clients))]
+	// return room.Clients[rand.Intn(len(room.Clients))]
+	length := len(room.Clients)
+	BigIntLength := big.NewInt(int64(length))
+
+	i, _ := rand.Int(rand.Reader, BigIntLength)
+	iInt := i.Int64()
+	return room.Clients[iInt]
 }
 
 func (room *Room) SetImage(base64 string) {
