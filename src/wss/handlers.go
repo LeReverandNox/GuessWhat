@@ -90,18 +90,23 @@ func onDisconnection(client *game.Client, err error) error {
 }
 
 func sendMessageAction(client *game.Client, content string) {
-	sanitizedContent := tools.Sanitize(content)
-	if len(sanitizedContent) > 0 {
+	content = tools.Sanitize(content)
+	if len(content) > 0 {
 		if room := myGame.GetCurrentClientRoom(client); room != nil {
 			trueRoom := room.(*game.Room)
-			msg := trueRoom.AddMessage(client, sanitizedContent)
+			msg := trueRoom.AddMessage(client, content)
+
+			// Send the message to the room
 			msgMap := structs.Map(msg)
 			msgMap["action"] = "incoming_room_message"
 			msgMap["channel"] = trueRoom.Name
-
 			client.Socket.SendToRoom(trueRoom, msgMap)
+
+			if trueRoom.IsStarted && client.Nickname != trueRoom.Drawer.Nickname {
+				parseForAnswer(client, trueRoom, msg)
+			}
 		} else {
-			msg := myGame.AddMessage(client, sanitizedContent)
+			msg := myGame.AddMessage(client, content)
 			msgMap := structs.Map(msg)
 			msgMap["action"] = "incoming_global_message"
 
@@ -290,6 +295,20 @@ func sendImageAction(client *game.Client, msg map[string]string) {
 	}
 }
 
+// Non actions
+
+func parseForAnswer(proposer *game.Client, room *game.Room, message *game.Message) {
+	dist := tools.Distance(message.Content, room.Word.Value)
+	if dist == 0 {
+		endRound(proposer, room, "WIN")
+	} else if dist <= 2 {
+		updateMsg := make(map[string]interface{})
+		updateMsg["action"] = "close_word"
+		updateMsg["room"] = room
+		updateMsg["proposed_word"] = message.Content
+		proposer.Socket.SendToSocket(proposer.Socket, updateMsg)
+	}
+}
 
 func startRound(client *game.Client, room *game.Room) {
 	// Pick and set random drawer
