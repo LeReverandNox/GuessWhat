@@ -9,6 +9,8 @@
             color: "#000000",
             thickness: 10
         };
+        this.lastX;
+        this.lastY;
     };
 
     GuessWhat.prototype.startEventListeners = function () {
@@ -38,6 +40,8 @@
 
         this.canvas = document.getElementById("canvas");
         this.context = this.canvas.getContext("2d");
+        this.context.lineCap = "round";
+        this.context.lineJoin = "round";
     };
 
     GuessWhat.prototype.connect = function () {
@@ -134,11 +138,14 @@
             return false
 
         this.localClick1 = true;
+        this.lastX = e.offsetX;
+        this.lastY = e.offsetY;
+
         var msg = JSON.stringify({
             action: "canvas_mouse_down",
             room: this.roomInput.value,
-            x: String(e.layerX),
-            y: String(e.layerY),
+            toX: String(this.lastX),
+            toY: String(this.lastY),
             thickness: String(this.tool.thickness),
             color: this.tool.color
         });
@@ -150,17 +157,23 @@
         if (!this.localClick1)
             return false
 
-        var msgObj ={
+        var toX = e.offsetX;
+        var toY = e.offsetY
+        var msg = JSON.stringify({
             action: "canvas_mouse_move",
             room: this.roomInput.value,
-            x: String(e.layerX),
-            y: String(e.layerY),
+            fromX: String(this.lastX),
+            fromY: String(this.lastY),
+            toX: String(toX),
+            toY: String(toY),
             thickness: String(this.tool.thickness),
             color: this.tool.color
-        };
+        });
 
-        var msg = JSON.stringify(msgObj)
         this.socket.send(msg);
+
+        this.lastX = toX;
+        this.lastY = toY;
     };
     GuessWhat.prototype.onLocalCanvasMouseUp = function (e) {
         if (!this.isConnected)
@@ -169,15 +182,6 @@
             return false
 
         this.localClick1 = false;
-        var msg = JSON.stringify({
-            action: "canvas_mouse_up",
-            room: this.roomInput.value,
-            x: String(e.layerX),
-            y: String(e.layerY),
-            thickness: String(this.tool.thickness),
-            color: this.tool.color
-        });
-        this.socket.send(msg);
     };
     GuessWhat.prototype.onLocalCanvasMouseOut = function (e) {
         if (!this.isConnected)
@@ -203,27 +207,24 @@
     };
 
     GuessWhat.prototype.onCanvasMouseDown = function (e) {
-        this.click1 = true;
+        this.context.strokeStyle = e.color;
+        this.context.fillStyle = e.color;
+        this.context.lineWidth = e.thickness;
+
         this.context.beginPath();
-        this.context.moveTo(e.x, e.y);
+        this.context.arc(e.toX, e.toY, e.thickness / 2, 0, 2 * Math.PI, true);
+        this.context.fill();
     };
 
     GuessWhat.prototype.onCanvasMouseMove = function (e) {
-        if (this.click1 === true) {
+        this.context.strokeStyle = e.color;
+        this.context.fillStyle = e.color;
+        this.context.lineWidth = e.thickness;
 
-            this.context.lineCap = "round";
-            this.context.lineJoin = "round";
-            this.context.strokeStyle = e.color;
-            this.context.fillStyle = e.color;
-            this.context.lineWidth = e.thickness;
-
-            this.context.lineTo(e.x, e.y);
-            this.context.stroke();
-        }
-    };
-
-    GuessWhat.prototype.onCanvasMouseUp = function (e) {
-        this.click1 = false;
+        this.context.beginPath();
+        this.context.moveTo(e.fromX, e.fromY);
+        this.context.lineTo(e.toX, e.toY);
+        this.context.stroke();
     };
 
     GuessWhat.prototype.cleanCanvas = function () {
