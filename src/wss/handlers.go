@@ -128,6 +128,12 @@ func joinRoomAction(client *game.Client, roomName string) {
 		// Send to the client all the infos about the joined room.
 		sendAllRoomMessagesTo(client, room)
 		sendAllRoomClientsTo(client, room)
+
+		// Send the current image to the client if the room is started
+		if room.IsStarted {
+			room.AddDrawingNeeder(client)
+			askDrawerForImage(room)
+		}
 		// Notify the others room clients the arrival of the client
 		client.Socket.BroadcastToRoom(room, updateMsg)
 	}
@@ -269,6 +275,28 @@ func startRoomAction(client *game.Client, roomName string) {
 	}
 }
 
+func sendImageAction(client *game.Client, msg map[string]string) {
+	roomName := msg["room"]
+	if myGame.IsRoomExisting(roomName) {
+		room, _ := myGame.GetRoom(roomName, client)
+		if room.IsStarted && room.Drawer.Nickname == client.Nickname {
+			room.SetImage(msg["image"])
+			for _, clientToSendTo := range room.NeedingDrawing {
+				log.Printf("On va envoyer l'image à %v", clientToSendTo.Nickname)
+				sendRoomImageTo(clientToSendTo, room)
+			}
+			room.CleanDrawingNeeders()
+		}
+	}
+}
+
+func askDrawerForImage(room *game.Room) {
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "ask_for_image"
+	updateMsg["room"] = room
+	room.Drawer.Socket.SendToSocket(room.Drawer.Socket, updateMsg)
+}
+
 func sendAllGameMessagesTo(client *game.Client) {
 	messages := make(map[string]interface{})
 	messages["action"] = "incoming_all_global_message"
@@ -319,4 +347,11 @@ func sendRoomDeletionToAll(client *game.Client, room *game.Room) {
 	updateMsg["action"] = "leaving_room"
 	updateMsg["room"] = room
 	client.Socket.SendToAll(myGame, updateMsg)
+}
+
+func sendRoomImageTo(client *game.Client, room *game.Room) {
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "incoming_room_image"
+	updateMsg["room"] = room
+	client.Socket.SendToSocket(client.Socket, updateMsg)
 }
