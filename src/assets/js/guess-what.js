@@ -112,6 +112,12 @@
             case "canvas_mouse_up":
                 this.onCanvasMouseUp(data)
                 break;
+            case "incoming_room_image":
+                this.onIncomingRoomImage(data)
+                break;
+            case "ask_for_image":
+                this.onAskForImage(data)
+                break;
             default:
                 console.log(data);
                 break;
@@ -144,14 +150,16 @@
         if (!this.localClick1)
             return false
 
-        var msg = JSON.stringify({
+        var msgObj ={
             action: "canvas_mouse_move",
             room: this.roomInput.value,
             x: String(e.layerX),
             y: String(e.layerY),
             thickness: String(this.tool.thickness),
             color: this.tool.color
-        });
+        };
+
+        var msg = JSON.stringify(msgObj)
         this.socket.send(msg);
     };
     GuessWhat.prototype.onLocalCanvasMouseUp = function (e) {
@@ -226,6 +234,34 @@
         var self = this;
         this.registerElements();
         this.startEventListeners();
+    };
+
+    GuessWhat.prototype.getCanvasBase64 = function () {
+        var b64 = this.canvas.toDataURL();
+        return b64;
+    };
+
+    GuessWhat.prototype.drawBase64ToCanvas = function (base64) {
+        var img = new Image();
+        img.src = base64;
+        var onLoadCb = function () {
+            this.context.drawImage(img, 0, 0);
+        };
+
+        img.onload = onLoadCb.bind(this)
+    };
+
+    GuessWhat.prototype.onIncomingRoomImage = function (e) {
+        this.drawBase64ToCanvas(e.room.Image);
+    }
+
+    GuessWhat.prototype.onAskForImage = function (e) {
+        var msg = JSON.stringify({
+            action: "send_image",
+            room: this.roomInput.value,
+            image: this.getCanvasBase64()
+        });
+        this.socket.send(msg);
     };
 
     document.addEventListener("DOMContentLoaded", function () {
