@@ -1,11 +1,11 @@
 package game
 
 import (
-	"crypto/rand"
 	"errors"
 	"log"
-	"math/big"
 	"time"
+
+	"github.com/LeReverandNox/GuessWhat/src/tools"
 )
 
 type Room struct {
@@ -103,13 +103,7 @@ func (room *Room) SetDrawer(drawer *Client) {
 }
 
 func (room *Room) PickRandomClient() *Client {
-	// return room.Clients[rand.Intn(len(room.Clients))]
-	length := len(room.Clients)
-	BigIntLength := big.NewInt(int64(length))
-
-	i, _ := rand.Int(rand.Reader, BigIntLength)
-	iInt := i.Int64()
-	return room.Clients[iInt]
+	return room.Clients[tools.RandomInt(len(room.Clients))]
 }
 
 func (room *Room) SetImage(base64 string) {

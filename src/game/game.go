@@ -1,10 +1,8 @@
 package game
 
 import (
-	"crypto/rand"
 	"errors"
 	"log"
-	"math/big"
 	"time"
 
 	"github.com/LeReverandNox/GuessWhat/src/tools"
@@ -127,12 +125,7 @@ func (game *Game) AddWord(wordStr string) *Word {
 }
 
 func (game *Game) PickRandomWord() *Word {
-	length := len(game.Words)
-	BigIntLength := big.NewInt(int64(length))
-
-	i, _ := rand.Int(rand.Reader, BigIntLength)
-	iInt := i.Int64()
-	return game.Words[iInt]
+	return game.Words[tools.RandomInt(len(game.Words))]
 }
 
 func (game *Game) IsRoomExisting(name string) bool {
