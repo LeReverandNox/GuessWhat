@@ -23,8 +23,6 @@ func parseMessage(client *game.Client, msg map[string]string) {
 		canvasMouseDownAction(client, msg)
 	case "canvas_mouse_move":
 		canvasMouseMoveAction(client, msg)
-	case "canvas_mouse_up":
-		canvasMouseUpAction(client, msg)
 	case "start_room":
 		startRoomAction(client, msg["room"])
 	case "send_image":
