@@ -260,15 +260,7 @@ func startRoomAction(client *game.Client, roomName string) {
 			} else {
 				room.Start()
 
-				// BOUCLE DEBUT JEU
-				// Pick and set random drawer
-				drawer := room.PickRandomClient()
-				room.SetDrawer(drawer)
-				// Pick and set random word
-				word := myGame.PickRandomWord()
-				room.SetWord(word)
-				// Start timer
-				// BOUCLE FIN JEU
+				startRound(client, room)
 
 				// Send to room clients about it's state
 				updateMsg := make(map[string]interface{})
@@ -296,6 +288,24 @@ func sendImageAction(client *game.Client, msg map[string]string) {
 			room.CleanDrawingNeeders()
 		}
 	}
+}
+
+
+func startRound(client *game.Client, room *game.Room) {
+	// Pick and set random drawer
+	drawer := room.PickRandomClient()
+	room.SetDrawer(drawer)
+	// Pick and set random word
+	word := myGame.PickRandomWord()
+	room.SetWord(word)
+	// TODO: Start timer
+
+	// Send to room clients about it's state
+	updateMsg := make(map[string]interface{})
+	updateMsg["action"] = "new_round_start"
+	updateMsg["room"] = room
+	updateMsg["drawer"] = drawer
+	client.Socket.SendToRoom(room, updateMsg)
 }
 
 func askDrawerForImage(room *game.Room) {
