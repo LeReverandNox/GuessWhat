@@ -7,7 +7,7 @@
         this.isConnected = false;
         this.tool = {
             color: "#000000",
-            thickness: 10
+            thickness: 7
         };
         this.lastX;
         this.lastY;
@@ -19,6 +19,8 @@
         this.joinRoomButton.addEventListener("click", this.joinRoom.bind(this));
         this.leaveRoomButton.addEventListener("click", this.leaveRoom.bind(this));
         this.startRoomButton.addEventListener("click", this.startRoom.bind(this));
+        this.colorHolder.addEventListener("click", this.colorClick.bind(this));
+        this.thicknessHolder.addEventListener("click", this.thicknessClick.bind(this));
 
         this.canvas.addEventListener("mousedown", this.onLocalCanvasMouseDown.bind(this));
         this.canvas.addEventListener("mousemove", this.onLocalCanvasMouseMove.bind(this));
@@ -37,6 +39,9 @@
         this.leaveRoomButton = document.getElementById("leave_room");
         this.startRoomButton = document.getElementById("start_room");
         this.roomInput = document.getElementById("room");
+
+        this.colorHolder = document.getElementById("color_holder");
+        this.thicknessHolder = document.getElementById("thickness_holder");
 
         this.canvas = document.getElementById("canvas");
         this.context = this.canvas.getContext("2d");
@@ -281,6 +286,20 @@
 
     GuessWhat.prototype.onNewRoundStart = function (e) {
         this.cleanCanvas();
+    };
+
+    GuessWhat.prototype.colorClick = function (e) {
+        var tar = e.target;
+        if (tar.tagName === "BUTTON") {
+            this.tool.color = "#" + tar.dataset.color;
+        }
+    };
+
+    GuessWhat.prototype.thicknessClick = function (e) {
+        var tar = e.target;
+        if (tar.tagName === "BUTTON") {
+            this.tool.thickness = tar.dataset.thickness;
+        }
     };
 
     document.addEventListener("DOMContentLoaded", function () {
