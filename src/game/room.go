@@ -8,14 +8,15 @@ import (
 )
 
 type Room struct {
-	Name      string
-	Messages  []*Message
-	Clients   []*Client
-	Drawer    *Client
-	Owner     *Client
-	Image     string
-	Word      *Word
-	IsStarted bool
+	Name           string
+	Messages       []*Message
+	Clients        []*Client
+	NeedingDrawing []*Client
+	Drawer         *Client
+	Owner          *Client
+	Image          string
+	Word           *Word
+	IsStarted      bool
 }
 
 // NewRoom creates a new room and returns it
@@ -102,6 +103,18 @@ func (room *Room) SetDrawer(drawer *Client) {
 
 func (room *Room) PickRandomClient() *Client {
 	return room.Clients[rand.Intn(len(room.Clients))]
+}
+
+func (room *Room) SetImage(base64 string) {
+	room.Image = base64
+}
+
+func (room *Room) AddDrawingNeeder(client *Client) {
+	room.NeedingDrawing = append(room.NeedingDrawing, client)
+}
+
+func (room *Room) CleanDrawingNeeders() {
+	room.NeedingDrawing = room.NeedingDrawing[:0]
 }
 
 // ListClients lists the clients of the room
