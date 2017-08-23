@@ -122,6 +122,12 @@
             case "ask_for_image":
                 this.onAskForImage(data)
                 break;
+            case "join_room_cb":
+                this.onJoinRoomCb(data);
+            case "leave_room_cb":
+                this.onLeaveRoomCb(data);
+            case "new_round_start":
+                this.onNewRoundStart(data);
             default:
                 console.log(data);
                 break;
@@ -263,6 +269,18 @@
             image: this.getCanvasBase64()
         });
         this.socket.send(msg);
+    };
+
+    GuessWhat.prototype.onJoinRoomCb = function (e) {
+        this.cleanCanvas();
+    };
+
+    GuessWhat.prototype.onLeaveRoomCb = function (e) {
+        this.cleanCanvas();
+    };
+
+    GuessWhat.prototype.onNewRoundStart = function (e) {
+        this.cleanCanvas();
     };
 
     document.addEventListener("DOMContentLoaded", function () {
