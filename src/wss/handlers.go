@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 
+	"github.com/LeReverandNox/GuessWhat/src/tools"
+
 	"github.com/LeReverandNox/GuessWhat/src/game"
 	"github.com/fatih/structs"
 	"golang.org/x/net/websocket"
@@ -78,20 +80,23 @@ func onDisconnection(client *game.Client, err error) error {
 }
 
 func sendMessageAction(client *game.Client, content string) {
-	if room := myGame.GetCurrentClientRoom(client); room != nil {
-		trueRoom := room.(*game.Room)
-		msg := trueRoom.AddMessage(client, content)
-		msgMap := structs.Map(msg)
-		msgMap["action"] = "incoming_room_message"
-		msgMap["channel"] = trueRoom.Name
+	sanitizedContent := tools.Sanitize(content)
+	if len(sanitizedContent) > 0 {
+		if room := myGame.GetCurrentClientRoom(client); room != nil {
+			trueRoom := room.(*game.Room)
+			msg := trueRoom.AddMessage(client, sanitizedContent)
+			msgMap := structs.Map(msg)
+			msgMap["action"] = "incoming_room_message"
+			msgMap["channel"] = trueRoom.Name
 
-		client.Socket.SendToRoom(trueRoom, msgMap)
-	} else {
-		msg := myGame.AddMessage(client, content)
-		msgMap := structs.Map(msg)
-		msgMap["action"] = "incoming_global_message"
+			client.Socket.SendToRoom(trueRoom, msgMap)
+		} else {
+			msg := myGame.AddMessage(client, sanitizedContent)
+			msgMap := structs.Map(msg)
+			msgMap["action"] = "incoming_global_message"
 
-		client.Socket.SendToAll(myGame, msgMap)
+			client.Socket.SendToAll(myGame, msgMap)
+		}
 	}
 }
 
