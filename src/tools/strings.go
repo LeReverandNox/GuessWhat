@@ -3,6 +3,8 @@ package tools
 import (
 	"regexp"
 	"strings"
+
+	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
 
 // RemoveAllSpaces removes all spaces of a given string.
@@ -27,4 +29,9 @@ func IsAlphaHyphen(str string) bool {
 func Sanitize(str string) string {
 	trimmedString := strings.TrimSpace(str)
 	return trimmedString
+}
+
+func Distance(str1 string, str2 string) int {
+	dist := levenshtein.DistanceForStrings([]rune(str1), []rune(str2), levenshtein.DefaultOptions)
+	return dist
 }
