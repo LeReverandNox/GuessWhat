@@ -111,75 +111,81 @@ func sendMessageAction(client *game.Client, content string) {
 }
 
 func joinRoomAction(client *game.Client, roomName string) {
-	room, isNew := myGame.GetRoom(roomName, client)
+	roomName = tools.Sanitize(roomName)
+	if len(roomName) > 0 {
+		room, isNew := myGame.GetRoom(roomName, client)
 
-	cbMsg := make(map[string]interface{})
-	cbMsg["action"] = "join_room_cb"
-	cbMsg["room"] = room
-
-	updateMsg := make(map[string]interface{})
-	updateMsg["action"] = "incoming_room_client"
-	updateMsg["room"] = room
-	updateMsg["client"] = client
-
-	if currRoom := myGame.GetCurrentClientRoom(client); currRoom != nil && currRoom != room {
-		cbMsg["success"] = false
-		cbMsg["reason"] = "You can only be in one room at a time."
-		client.Socket.SendToSocket(client.Socket, cbMsg)
-	} else if err := room.AddClient(client); err != nil {
-		cbMsg["success"] = false
-		cbMsg["reason"] = "You are already in this room."
-		client.Socket.SendToSocket(client.Socket, cbMsg)
-	} else {
-		cbMsg["success"] = true
-		client.Socket.SendToSocket(client.Socket, cbMsg)
-		// If the channel just got created, broadcast it !
-		if isNew {
-			updateMsg := make(map[string]interface{})
-			updateMsg["action"] = "incoming_room"
-			updateMsg["room"] = room
-			client.Socket.Broadcast(myGame, updateMsg)
-		}
-		// Send to the client all the infos about the joined room.
-		sendAllRoomMessagesTo(client, room)
-		sendAllRoomClientsTo(client, room)
-
-		// Send the current image to the client if the room is started
-		if room.IsStarted {
-			room.AddDrawingNeeder(client)
-			askDrawerForImage(room)
-		}
-		// Notify the others room clients the arrival of the client
-		client.Socket.BroadcastToRoom(room, updateMsg)
-	}
-}
-
-func leaveRoomAction(client *game.Client, roomName string) {
-	cbMsg := make(map[string]interface{})
-	cbMsg["action"] = "leave_room_cb"
-
-	if !myGame.IsRoomExisting(roomName) {
-		cbMsg["room"] = roomName
-		cbMsg["success"] = false
-		cbMsg["reason"] = "This room doesn't exists."
-		client.Socket.SendToSocket(client.Socket, cbMsg)
-	} else {
-		room, _ := myGame.GetRoom(roomName, client)
+		cbMsg := make(map[string]interface{})
+		cbMsg["action"] = "join_room_cb"
 		cbMsg["room"] = room
 
-		isEmpty, err := room.RemoveClient(client)
-		if err != nil {
+		updateMsg := make(map[string]interface{})
+		updateMsg["action"] = "incoming_room_client"
+		updateMsg["room"] = room
+		updateMsg["client"] = client
+
+		if currRoom := myGame.GetCurrentClientRoom(client); currRoom != nil && currRoom != room {
 			cbMsg["success"] = false
+			cbMsg["reason"] = "You can only be in one room at a time."
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+		} else if err := room.AddClient(client); err != nil {
+			cbMsg["success"] = false
+			cbMsg["reason"] = "You are already in this room."
 			client.Socket.SendToSocket(client.Socket, cbMsg)
 		} else {
 			cbMsg["success"] = true
 			client.Socket.SendToSocket(client.Socket, cbMsg)
-			// Broadcast his departure from the channel to other clients
-			sendRoomDepartureToAll(client, room)
-			if isEmpty {
-				myGame.RemoveRoom(room)
-				// Tell everyone about the room suppression.
-				sendRoomDeletionToAll(client, room)
+			// If the channel just got created, broadcast it !
+			if isNew {
+				updateMsg := make(map[string]interface{})
+				updateMsg["action"] = "incoming_room"
+				updateMsg["room"] = room
+				client.Socket.Broadcast(myGame, updateMsg)
+			}
+			// Send to the client all the infos about the joined room.
+			sendAllRoomMessagesTo(client, room)
+			sendAllRoomClientsTo(client, room)
+
+			// Send the current image to the client if the room is started
+			if room.IsStarted {
+				room.AddDrawingNeeder(client)
+				askDrawerForImage(room)
+			}
+			// Notify the others room clients the arrival of the client
+			client.Socket.BroadcastToRoom(room, updateMsg)
+		}
+	}
+}
+
+func leaveRoomAction(client *game.Client, roomName string) {
+	roomName = tools.Sanitize(roomName)
+	if len(roomName) > 0 {
+		cbMsg := make(map[string]interface{})
+		cbMsg["action"] = "leave_room_cb"
+
+		if !myGame.IsRoomExisting(roomName) {
+			cbMsg["room"] = roomName
+			cbMsg["success"] = false
+			cbMsg["reason"] = "This room doesn't exists."
+			client.Socket.SendToSocket(client.Socket, cbMsg)
+		} else {
+			room, _ := myGame.GetRoom(roomName, client)
+			cbMsg["room"] = room
+
+			isEmpty, err := room.RemoveClient(client)
+			if err != nil {
+				cbMsg["success"] = false
+				client.Socket.SendToSocket(client.Socket, cbMsg)
+			} else {
+				cbMsg["success"] = true
+				client.Socket.SendToSocket(client.Socket, cbMsg)
+				// Broadcast his departure from the channel to other clients
+				sendRoomDepartureToAll(client, room)
+				if isEmpty {
+					myGame.RemoveRoom(room)
+					// Tell everyone about the room suppression.
+					sendRoomDeletionToAll(client, room)
+				}
 			}
 		}
 	}
@@ -224,52 +230,55 @@ func canvasMouseMoveAction(client *game.Client, msg map[string]string) {
 }
 
 func startRoomAction(client *game.Client, roomName string) {
-	cbMsg := make(map[string]interface{})
-	cbMsg["action"] = "start_room_cb"
+	roomName = tools.Sanitize(roomName)
+	if len(roomName) > 0 {
+		cbMsg := make(map[string]interface{})
+		cbMsg["action"] = "start_room_cb"
 
-	if !myGame.IsRoomExisting(roomName) {
-		cbMsg["room"] = roomName
-		cbMsg["success"] = false
-		cbMsg["reason"] = "This room doesn't exists."
-		client.Socket.SendToSocket(client.Socket, cbMsg)
-	} else {
-		room, _ := myGame.GetRoom(roomName, client)
-
-		cbMsg["room"] = room
-
-		if !room.IsOwner(client) {
+		if !myGame.IsRoomExisting(roomName) {
+			cbMsg["room"] = roomName
 			cbMsg["success"] = false
-			cbMsg["reason"] = "You are not the owner of this room."
-			client.Socket.SendToSocket(client.Socket, cbMsg)
-		} else if room.IsStarted {
-			cbMsg["success"] = false
-			cbMsg["reason"] = "This room is already started."
-			client.Socket.SendToSocket(client.Socket, cbMsg)
-		} else if room.GetNbClients() < 2 {
-			cbMsg["success"] = false
-			cbMsg["reason"] = "You have to be at least 2 players to start a room."
+			cbMsg["reason"] = "This room doesn't exists."
 			client.Socket.SendToSocket(client.Socket, cbMsg)
 		} else {
-			room.Start()
+			room, _ := myGame.GetRoom(roomName, client)
 
-			// BOUCLE DEBUT JEU
-			// Pick and set random drawer
-			drawer := room.PickRandomClient()
-			room.SetDrawer(drawer)
-			// Pick and set random word
-			word := myGame.PickRandomWord()
-			room.SetWord(word)
-			// Start timer
-			// BOUCLE FIN JEU
+			cbMsg["room"] = room
 
-			// Send to room clients about it's state
-			updateMsg := make(map[string]interface{})
-			updateMsg["action"] = "room_start"
-			updateMsg["room"] = room
-			client.Socket.SendToRoom(room, updateMsg)
+			if !room.IsOwner(client) {
+				cbMsg["success"] = false
+				cbMsg["reason"] = "You are not the owner of this room."
+				client.Socket.SendToSocket(client.Socket, cbMsg)
+			} else if room.IsStarted {
+				cbMsg["success"] = false
+				cbMsg["reason"] = "This room is already started."
+				client.Socket.SendToSocket(client.Socket, cbMsg)
+			} else if room.GetNbClients() < 2 {
+				cbMsg["success"] = false
+				cbMsg["reason"] = "You have to be at least 2 players to start a room."
+				client.Socket.SendToSocket(client.Socket, cbMsg)
+			} else {
+				room.Start()
 
-			cbMsg["success"] = true
-			client.Socket.SendToSocket(client.Socket, cbMsg)
+				// BOUCLE DEBUT JEU
+				// Pick and set random drawer
+				drawer := room.PickRandomClient()
+				room.SetDrawer(drawer)
+				// Pick and set random word
+				word := myGame.PickRandomWord()
+				room.SetWord(word)
+				// Start timer
+				// BOUCLE FIN JEU
+
+				// Send to room clients about it's state
+				updateMsg := make(map[string]interface{})
+				updateMsg["action"] = "room_start"
+				updateMsg["room"] = room
+				client.Socket.SendToRoom(room, updateMsg)
+
+				cbMsg["success"] = true
+				client.Socket.SendToSocket(client.Socket, cbMsg)
+			}
 		}
 	}
 }
