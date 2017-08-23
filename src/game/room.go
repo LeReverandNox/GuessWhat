@@ -18,6 +18,9 @@ type Room struct {
 	Image          string
 	Word           *Word
 	IsStarted      bool
+	TotalRounds    int
+	ActualRound    int
+	IsRoundGoing   bool
 }
 
 // NewRoom creates a new room and returns it
@@ -28,6 +31,9 @@ func NewRoom(name string, owner *Client) *Room {
 	room.Messages = make([]*Message, 0)
 	room.Owner = owner
 	room.IsStarted = false
+	room.TotalRounds = 10
+	room.ActualRound = 0
+	room.IsRoundGoing = false
 	return &room
 }
 
@@ -116,6 +122,30 @@ func (room *Room) AddDrawingNeeder(client *Client) {
 
 func (room *Room) CleanDrawingNeeders() {
 	room.NeedingDrawing = room.NeedingDrawing[:0]
+}
+
+func (room *Room) ResetImage() {
+	room.Image = ""
+}
+
+func (room *Room) IncrementRound() {
+	room.ActualRound++
+}
+
+func (room *Room) ResetRounds() {
+	room.ActualRound = 0
+}
+
+func (room *Room) ResetMessages() {
+	room.Messages = room.Messages[:0]
+}
+
+func (room *Room) StartRound() {
+	room.IsRoundGoing = true
+}
+
+func (room *Room) StopRound() {
+	room.IsRoundGoing = false
 }
 
 // ListClients lists the clients of the room
