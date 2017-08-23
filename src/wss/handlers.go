@@ -179,8 +179,8 @@ func canvasMouseDownAction(client *game.Client, msg map[string]string) {
 			updateMsg["action"] = "canvas_mouse_down"
 			updateMsg["client"] = client
 			updateMsg["room"] = room
-			updateMsg["x"] = msg["x"]
-			updateMsg["y"] = msg["y"]
+			updateMsg["toX"] = msg["toX"]
+			updateMsg["toY"] = msg["toY"]
 			updateMsg["color"] = msg["color"]
 			updateMsg["thickness"] = msg["thickness"]
 			client.Socket.SendToRoom(room, updateMsg)
@@ -197,26 +197,10 @@ func canvasMouseMoveAction(client *game.Client, msg map[string]string) {
 			updateMsg["action"] = "canvas_mouse_move"
 			updateMsg["client"] = client
 			updateMsg["room"] = room
-			updateMsg["x"] = msg["x"]
-			updateMsg["y"] = msg["y"]
-			updateMsg["color"] = msg["color"]
-			updateMsg["thickness"] = msg["thickness"]
-			client.Socket.SendToRoom(room, updateMsg)
-		}
-	}
-}
-
-func canvasMouseUpAction(client *game.Client, msg map[string]string) {
-	roomName := msg["room"]
-	if myGame.IsRoomExisting(roomName) {
-		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsStarted && room.Drawer.Nickname == client.Nickname {
-			updateMsg := make(map[string]interface{})
-			updateMsg["action"] = "canvas_mouse_up"
-			updateMsg["client"] = client
-			updateMsg["room"] = room
-			updateMsg["x"] = msg["x"]
-			updateMsg["y"] = msg["y"]
+			updateMsg["fromX"] = msg["fromX"]
+			updateMsg["fromY"] = msg["fromY"]
+			updateMsg["toX"] = msg["toX"]
+			updateMsg["toY"] = msg["toY"]
 			updateMsg["color"] = msg["color"]
 			updateMsg["thickness"] = msg["thickness"]
 			client.Socket.SendToRoom(room, updateMsg)
