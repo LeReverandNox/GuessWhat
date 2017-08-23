@@ -181,12 +181,18 @@ func leaveRoomAction(client *game.Client, roomName string) {
 			isEmpty, err := room.RemoveClient(client)
 			if err != nil {
 				cbMsg["success"] = false
+				cbMsg["reason"] = "You are not in this room."
 				client.Socket.SendToSocket(client.Socket, cbMsg)
 			} else {
+				// Reset the client points
+				client.ResetScore()
+
 				cbMsg["success"] = true
+				cbMsg["me"] = client
 				client.Socket.SendToSocket(client.Socket, cbMsg)
 				// Broadcast his departure from the channel to other clients
 				sendRoomDepartureToAll(client, room)
+
 				if isEmpty {
 					myGame.RemoveRoom(room)
 					// Tell everyone about the room suppression.
@@ -344,10 +350,10 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 		log.Printf("%v a gagné", client.Nickname)
 		updateMsg["winner"] = client
 		updateMsg["reason"] = "WIN"
-		client.Socket.SendToRoom(room, updateMsg)
 
-		// ATTRIUBER LES POINTS
-		// ENVOYER LA MISE A JOUR DES CLIENTS
+		// TODO: compute score according to the timer...
+		client.AddToScore(50)
+		client.Socket.SendToRoom(room, updateMsg)
 	}
 
 	// Wait a moment, so clients can see score and stuff.
