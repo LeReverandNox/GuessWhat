@@ -25,3 +25,11 @@ func (client *Client) SetNickname(nickname string) error {
 	client.Nickname = nickname
 	return nil
 }
+
+func (client *Client) AddToScore(amount int) {
+	client.Score += amount
+}
+
+func (client *Client) ResetScore() {
+	client.Score = 0
+}
