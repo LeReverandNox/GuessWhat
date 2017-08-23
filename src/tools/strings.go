@@ -23,3 +23,8 @@ func IsAlphaHyphen(str string) bool {
 
 	return isMatching
 }
+
+func Sanitize(str string) string {
+	trimmedString := strings.TrimSpace(str)
+	return trimmedString
+}
