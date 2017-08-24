@@ -233,6 +233,13 @@ func (room *Room) ComputeClientsPoints() {
 	}
 }
 
+func (room *Room) IsDrawer(client *Client) bool {
+	if client.Nickname == room.Drawer.Nickname {
+		return true
+	}
+	return false
+}
+
 // ListClients lists the clients of the room
 func (room *Room) ListClients() {
 	log.Println("Voici les clients de la channel")

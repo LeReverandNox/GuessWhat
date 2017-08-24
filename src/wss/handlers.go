@@ -98,7 +98,7 @@ func sendMessageAction(client *game.Client, content string) {
 			msg := room.AddMessage(client, content)
 
 			hasWon := false
-			if room.IsRoundGoing && client.Nickname != room.Drawer.Nickname {
+			if room.IsRoundGoing && !room.IsDrawer(client) {
 				hasWon = parseForAnswer(client, room, msg)
 			}
 
@@ -217,7 +217,7 @@ func canvasMouseDownAction(client *game.Client, msg map[string]string) {
 	roomName := msg["room"]
 	if myGame.IsRoomExisting(roomName) {
 		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
+		if room.IsRoundGoing && room.IsDrawer(client) {
 			updateMsg := make(map[string]interface{})
 			updateMsg["action"] = "canvas_mouse_down"
 			updateMsg["client"] = client
@@ -235,7 +235,7 @@ func canvasMouseMoveAction(client *game.Client, msg map[string]string) {
 	roomName := msg["room"]
 	if myGame.IsRoomExisting(roomName) {
 		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
+		if room.IsRoundGoing && room.IsDrawer(client) {
 			updateMsg := make(map[string]interface{})
 			updateMsg["action"] = "canvas_mouse_move"
 			updateMsg["client"] = client
@@ -301,7 +301,7 @@ func sendImageAction(client *game.Client, msg map[string]string) {
 	roomName := msg["room"]
 	if myGame.IsRoomExisting(roomName) {
 		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
+		if room.IsRoundGoing && room.IsDrawer(client) {
 			room.SetImage(msg["image"])
 			for _, clientToSendTo := range room.NeedingDrawing {
 				sendRoomImageTo(clientToSendTo, room)
@@ -314,7 +314,7 @@ func sendImageAction(client *game.Client, msg map[string]string) {
 func cleanCanvasAction(client *game.Client, roomName string) {
 	if myGame.IsRoomExisting(roomName) {
 		room, _ := myGame.GetRoom(roomName, client)
-		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
+		if room.IsRoundGoing && room.IsDrawer(client) {
 			room.ResetImage()
 
 			updateMsg := make(map[string]interface{})
