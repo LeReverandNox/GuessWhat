@@ -3,27 +3,32 @@ package game
 import (
 	"errors"
 	"log"
+	"math"
 	"time"
 
 	"github.com/LeReverandNox/GuessWhat/src/tools"
 )
 
 type Room struct {
-	Name           string
-	Messages       []*Message
-	Clients        []*Client
-	NeedingDrawing []*Client
-	Drawer         *Client
-	Owner          *Client
-	Image          string
-	Word           *Word
-	IsStarted      bool
-	TotalRounds    int
-	ActualRound    int
-	IsRoundGoing   bool
-	RoundDuration  int
-	roundEnd       time.Time
-	roundTicker    *time.Ticker
+	Name            string
+	Messages        []*Message
+	Clients         []*Client
+	NeedingDrawing  []*Client
+	Drawer          *Client
+	Owner           *Client
+	Image           string
+	Word            *Word
+	IsStarted       bool
+	TotalRounds     int
+	ActualRound     int
+	IsRoundGoing    bool
+	RoundDuration   int
+	roundEnd        time.Time
+	roundTicker     *time.Ticker
+	Winners         []*Winner
+	PassedSeconds   int
+	baseScore       int
+	drawerBaseScore int
 }
 
 // NewRoom creates a new room and returns it
@@ -37,7 +42,9 @@ func NewRoom(name string, owner *Client) *Room {
 	room.TotalRounds = 10
 	room.ActualRound = 0
 	room.IsRoundGoing = false
-	room.RoundDuration = 90
+	room.RoundDuration = 80
+	room.baseScore = 300
+	room.drawerBaseScore = 75
 	return &room
 }
 
@@ -182,6 +189,48 @@ func (room *Room) SetRoundDuration(duration int) int {
 
 func (room *Room) GetRoundDuration() int {
 	return room.RoundDuration
+}
+
+func (room *Room) AddWinner(client *Client) *Winner {
+	winner := NewWinner(client, room.PassedSeconds)
+
+	room.Winners = append(room.Winners, winner)
+	return winner
+}
+
+func (room *Room) CleanWinners() {
+	room.Winners = room.Winners[:0]
+}
+
+func (room *Room) HaveClientAlreadyWin(client *Client) bool {
+	for _, winner := range room.Winners {
+		if winner.Client == client {
+			return true
+		}
+	}
+	return false
+}
+
+func (room *Room) GetNbWinners() int {
+	return len(room.Winners)
+}
+
+func (room *Room) ComputeClientsPoints() {
+	for _, winner := range room.Winners {
+		log.Printf("%v a mis %v sec a repondre", winner.Client.Nickname, winner.WinTime)
+		a := 38.779
+		b := 6.805 * float64(room.RoundDuration-winner.WinTime)
+		c := 0.0441 * math.Pow(float64(room.RoundDuration-winner.WinTime), 2)
+		f64Score := a + b - c
+		winner.Client.Score = int(f64Score)
+	}
+	if room.GetNbWinners() > 0 {
+		a := 12.18992
+		b := 1.600994 * float64(room.RoundDuration-room.Winners[0].WinTime)
+		c := 0.0101963 * math.Pow(float64(room.RoundDuration-room.Winners[0].WinTime), 2)
+		f64Score := a + b - c
+		room.Drawer.Score = int(f64Score)
+	}
 }
 
 // ListClients lists the clients of the room
