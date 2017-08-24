@@ -21,6 +21,9 @@ type Room struct {
 	TotalRounds    int
 	ActualRound    int
 	IsRoundGoing   bool
+	RoundDuration  int
+	roundEnd       time.Time
+	roundTicker    *time.Ticker
 }
 
 // NewRoom creates a new room and returns it
@@ -34,6 +37,7 @@ func NewRoom(name string, owner *Client) *Room {
 	room.TotalRounds = 10
 	room.ActualRound = 0
 	room.IsRoundGoing = false
+	room.RoundDuration = 90
 	return &room
 }
 
@@ -146,6 +150,38 @@ func (room *Room) StartRound() {
 
 func (room *Room) StopRound() {
 	room.IsRoundGoing = false
+}
+
+func (room *Room) SetTicker(ticker *time.Ticker) *time.Ticker {
+	room.roundTicker = ticker
+	return room.roundTicker
+}
+
+func (room *Room) GetTicker() *time.Ticker {
+	return room.roundTicker
+}
+
+func (room *Room) StopTicker() *time.Ticker {
+	room.roundTicker.Stop()
+	return room.roundTicker
+}
+
+func (room *Room) SetRoundEnd(time time.Time) time.Time {
+	room.roundEnd = time
+	return room.roundEnd
+}
+
+func (room *Room) GetRoundEnd() time.Time {
+	return room.roundEnd
+}
+
+func (room *Room) SetRoundDuration(duration int) int {
+	room.RoundDuration = duration
+	return room.RoundDuration
+}
+
+func (room *Room) GetRoundDuration() int {
+	return room.RoundDuration
 }
 
 // ListClients lists the clients of the room
