@@ -11,6 +11,7 @@
         };
         this.lastX;
         this.lastY;
+        this.secretWord = "";
     };
 
     GuessWhat.prototype.startEventListeners = function () {
@@ -44,6 +45,8 @@
         this.colorHolder = document.getElementById("color_holder");
         this.thicknessHolder = document.getElementById("thickness_holder");
         this.toolsHolder = document.getElementById("tools_holder");
+
+        this.secretWordP = document.getElementById("secret_word");
 
         this.canvas = document.getElementById("canvas");
         this.context = this.canvas.getContext("2d");
@@ -131,12 +134,25 @@
                 break;
             case "join_room_cb":
                 this.onJoinRoomCb(data);
+                break;
             case "leave_room_cb":
                 this.onLeaveRoomCb(data);
+                break;
             case "new_round_start":
                 this.onNewRoundStart(data);
+                break;
             case "clean_canvas":
                 this.onCleanCanvas(data);
+                break;
+            case "new_round_start":
+                this.onNewRoundStart(data);
+                break;
+            case "reveal_letter":
+                this.onRevealLetter(data);
+                break;
+            case "you_are_drawing":
+                this.onYouAreDrawing(data);
+                break;
             default:
                 console.log(data);
                 break;
@@ -332,6 +348,28 @@
             room: this.roomInput.value
         });
         this.socket.send(msg);
+    };
+
+    GuessWhat.prototype.onNewRoundStart = function (e) {
+        this.secretWord = "_".repeat(e.word_length);
+        this.secretWordP.innerHTML = this.secretWord;
+    };
+
+    GuessWhat.prototype.onRevealLetter = function (e) {
+        var index = e.pos;
+        var letter = e.letter;
+        this.secretWord = replaceAt(this.secretWord, index, letter)
+
+        this.secretWordP.innerHTML = this.secretWord;
+    };
+
+    GuessWhat.prototype.onYouAreDrawing = function (e) {
+        this.secretWord = e.word.Value;
+        this.secretWordP.innerHTML = this.secretWord;
+    };
+
+    function replaceAt (string, index, replacement) {
+        return string.substr(0, index) + replacement + string.substr(index + replacement.length);
     }
 
     document.addEventListener("DOMContentLoaded", function () {
