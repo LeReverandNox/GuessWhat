@@ -400,7 +400,7 @@ func handleRoundTimer(client *game.Client, room *game.Room) {
 	go func() {
 		i := 1
 		revealInterval := room.RoundDuration / room.GetWord().Length
-		log.Printf("On doit reveal une lettre toutes les %v sec", revealInterval)
+
 		defer func() {
 			room.StopTicker()
 			endRound(client, room, "TIMESUP")
