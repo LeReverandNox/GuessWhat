@@ -21,6 +21,7 @@
         this.startRoomButton.addEventListener("click", this.startRoom.bind(this));
         this.colorHolder.addEventListener("click", this.colorClick.bind(this));
         this.thicknessHolder.addEventListener("click", this.thicknessClick.bind(this));
+        this.toolsHolder.addEventListener("click", this.toolsClick.bind(this));
 
         this.canvas.addEventListener("mousedown", this.onLocalCanvasMouseDown.bind(this));
         this.canvas.addEventListener("mousemove", this.onLocalCanvasMouseMove.bind(this));
@@ -42,6 +43,7 @@
 
         this.colorHolder = document.getElementById("color_holder");
         this.thicknessHolder = document.getElementById("thickness_holder");
+        this.toolsHolder = document.getElementById("tools_holder");
 
         this.canvas = document.getElementById("canvas");
         this.context = this.canvas.getContext("2d");
@@ -133,6 +135,8 @@
                 this.onLeaveRoomCb(data);
             case "new_round_start":
                 this.onNewRoundStart(data);
+            case "clean_canvas":
+                this.onCleanCanvas(data);
             default:
                 console.log(data);
                 break;
@@ -238,6 +242,10 @@
         this.context.stroke();
     };
 
+    GuessWhat.prototype.onCleanCanvas = function (e) {
+        this.cleanCanvas();
+    }
+
     GuessWhat.prototype.cleanCanvas = function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     };
@@ -301,6 +309,30 @@
             this.tool.thickness = tar.dataset.thickness;
         }
     };
+
+    GuessWhat.prototype.toolsClick = function (e) {
+        var tar = e.target;
+        if (tar.tagName === "BUTTON") {
+            switch (tar.dataset.tool) {
+                case "clear":
+                    this.askCleanCanvas();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
+    GuessWhat.prototype.askCleanCanvas = function () {
+        if (!this.isConnected)
+            return false
+
+        var msg = JSON.stringify({
+            action: "clean_canvas",
+            room: this.roomInput.value
+        });
+        this.socket.send(msg);
+    }
 
     document.addEventListener("DOMContentLoaded", function () {
         var GW = new GuessWhat();
