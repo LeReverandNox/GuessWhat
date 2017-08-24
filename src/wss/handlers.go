@@ -345,7 +345,7 @@ func cleanCanvasAction(client *game.Client, roomName string) {
 // Non actions
 
 func parseForAnswer(proposer *game.Client, room *game.Room, message *game.Message) bool {
-	dist := tools.Distance(message.Content, room.Word.Value)
+	dist := tools.Distance(message.Content, room.GetWord().Value)
 	if dist == 0 {
 		room.AddWinner(proposer)
 		return true
@@ -378,7 +378,7 @@ func startRound(client *game.Client, room *game.Room) {
 	updateMsg["action"] = "new_round_start"
 	updateMsg["room"] = room
 	updateMsg["drawer"] = drawer
-	updateMsg["word"] = room.Word.Value
+	updateMsg["word"] = room.GetWord().Value
 	client.Socket.SendToRoom(room, updateMsg)
 }
 
@@ -388,7 +388,7 @@ func handleRoundTimer(client *game.Client, room *game.Room) {
 
 	go func() {
 		i := 1
-		revealInterval := room.RoundDuration / room.Word.Length
+		revealInterval := room.RoundDuration / room.GetWord().Length
 		log.Printf("On doit reveal une lettre toutes les %v sec", revealInterval)
 		defer func() {
 			room.StopTicker()

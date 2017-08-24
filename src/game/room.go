@@ -17,7 +17,7 @@ type Room struct {
 	Drawer          *Client
 	Owner           *Client
 	Image           string
-	Word            *Word
+	word            *Word
 	IsStarted       bool
 	TotalRounds     int
 	ActualRound     int
@@ -112,8 +112,12 @@ func (room *Room) GetNbClients() int {
 	return len(room.Clients)
 }
 
+func (room *Room) GetWord() *Word {
+	return room.word
+}
+
 func (room *Room) SetWord(word *Word) {
-	room.Word = word
+	room.word = word
 }
 
 func (room *Room) SetDrawer(drawer *Client) {
@@ -269,7 +273,7 @@ func (room *Room) isLetterRevealed(letter string) bool {
 }
 
 func (room *Room) isWordAlmostRevealed() bool {
-	if len(room.reaveledLetters) == (room.Word.Length - 1) {
+	if len(room.reaveledLetters) == (room.word.Length - 1) {
 		return true
 	}
 	return false
@@ -277,7 +281,7 @@ func (room *Room) isWordAlmostRevealed() bool {
 
 func (room *Room) getUnrevealedLetters() []string {
 	res := make([]string, 0)
-	for _, c := range room.Word.Value {
+	for _, c := range room.word.Value {
 		char := string(c)
 		if !room.isLetterRevealed(char) {
 			res = append(res, char)
