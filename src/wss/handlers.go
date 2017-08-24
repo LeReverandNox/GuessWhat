@@ -304,10 +304,23 @@ func sendImageAction(client *game.Client, msg map[string]string) {
 		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
 			room.SetImage(msg["image"])
 			for _, clientToSendTo := range room.NeedingDrawing {
-				log.Printf("On va envoyer l'image à %v", clientToSendTo.Nickname)
 				sendRoomImageTo(clientToSendTo, room)
 			}
 			room.CleanDrawingNeeders()
+		}
+	}
+}
+
+func cleanCanvasAction(client *game.Client, roomName string) {
+	if myGame.IsRoomExisting(roomName) {
+		room, _ := myGame.GetRoom(roomName, client)
+		if room.IsRoundGoing && room.Drawer.Nickname == client.Nickname {
+			room.ResetImage()
+
+			updateMsg := make(map[string]interface{})
+			updateMsg["action"] = "clean_canvas"
+			updateMsg["room"] = room
+			client.Socket.SendToRoom(room, updateMsg)
 		}
 	}
 }

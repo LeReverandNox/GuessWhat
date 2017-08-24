@@ -27,6 +27,8 @@ func parseMessage(client *game.Client, msg map[string]string) {
 		startRoomAction(client, msg["room"])
 	case "send_image":
 		sendImageAction(client, msg)
+	case "clean_canvas":
+		cleanCanvasAction(client, msg["room"])
 	}
 
 	myGame.ListClients()
