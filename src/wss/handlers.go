@@ -324,10 +324,10 @@ func startRound(client *game.Client, room *game.Room) {
 	// Pick and set random word
 	word := myGame.PickRandomWord()
 	room.SetWord(word)
-	// TODO: Start timer
 	room.ResetImage()
 	room.IncrementRound()
 	room.StartRound()
+	handleRoundTimer(client, room)
 
 	// Send to room clients about it's state
 	updateMsg := make(map[string]interface{})
@@ -336,6 +336,33 @@ func startRound(client *game.Client, room *game.Room) {
 	updateMsg["drawer"] = drawer
 	updateMsg["word"] = room.Word.Value
 	client.Socket.SendToRoom(room, updateMsg)
+}
+
+func handleRoundTimer(client *game.Client, room *game.Room) {
+	roundTicker := room.SetTicker(time.NewTicker(time.Second * 1))
+	roundEnd := room.SetRoundEnd(time.Now().Local().Add(time.Second * time.Duration(room.RoundDuration+1)))
+
+	go func() {
+		iteration := 1
+		defer func() {
+			room.StopTicker()
+			endRound(client, room, "TIMESUP")
+		}()
+
+		for t := range roundTicker.C {
+			if t.After(roundEnd) {
+				break
+			}
+
+			// TODO: implement letter revelation according to iteration
+			log.Printf("Iteration : %v", iteration)
+			iteration++
+		}
+	}()
+}
+
+func revealWordLetter(client *game.Client, room *game.Room) {
+	log.Printf("On va reveler une lettre")
 }
 
 func endRound(client *game.Client, room *game.Room, reason string) {
