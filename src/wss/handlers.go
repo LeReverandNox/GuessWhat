@@ -102,7 +102,7 @@ func sendMessageAction(client *game.Client, content string) {
 				hasWon = parseForAnswer(client, room, msg)
 			}
 
-			if !hasWon {
+			if !hasWon && !room.IsDrawer(client) {
 				// Send the message to the room
 				msgMap := structs.Map(msg)
 				msgMap["action"] = "incoming_room_message"
