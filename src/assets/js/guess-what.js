@@ -47,6 +47,8 @@
         this.toolsHolder = document.getElementById("tools_holder");
 
         this.secretWordP = document.getElementById("secret_word");
+        this.countdownHolder = document.getElementById("countdown_holder");
+        this.countdown = document.getElementById("countdown");
 
         this.canvas = document.getElementById("canvas");
         this.context = this.canvas.getContext("2d");
@@ -353,6 +355,7 @@
     GuessWhat.prototype.onNewRoundStart = function (e) {
         this.secretWord = "_".repeat(e.word_length);
         this.secretWordP.innerHTML = this.secretWord;
+        this.startTimer(e.room.RoundDuration);
     };
 
     GuessWhat.prototype.onRevealLetter = function (e) {
@@ -366,10 +369,29 @@
     GuessWhat.prototype.onYouAreDrawing = function (e) {
         this.secretWord = e.word.Value;
         this.secretWordP.innerHTML = this.secretWord;
+        this.startTimer(e.room.RoundDuration);
+    };
+
+    GuessWhat.prototype.startTimer = function (duration) {
+        this.countdownIntv = makeTimer(duration, this.countdownHolder);
+    }
+
+    GuessWhat.prototype.stopTimer = function () {
+        clearInterval(this.countdownIntv);
+        this.countdown.innerHTML = "";
     };
 
     function replaceAt (string, index, replacement) {
         return string.substr(0, index) + replacement + string.substr(index + replacement.length);
+    }
+    function makeTimer(duration, display) {
+        var intv = setInterval(function () {
+            display.innerHTML = duration;
+            if (duration  >= 1) {
+                duration--
+            }
+        }, 1000);
+        return intv
     }
 
     document.addEventListener("DOMContentLoaded", function () {
