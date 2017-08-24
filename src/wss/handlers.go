@@ -67,8 +67,17 @@ func onDisconnection(client *game.Client, err error) error {
 	if room := myGame.GetCurrentClientRoom(client); room != nil {
 		trueRoom := room.(*game.Room)
 		isEmpty, _ := trueRoom.RemoveClient(client)
+
 		// Broadcast his departure from the channel to other clients
 		sendRoomDepartureToAll(client, trueRoom)
+
+		if trueRoom.IsRoundGoing {
+			if trueRoom.GetNbClients() < 2 {
+				endRound(client, trueRoom, "NOT_ENOUGH_CLIENTS")
+			} else if trueRoom.IsDrawer(client) {
+				endRound(client, trueRoom, "DRAWER_LEFT")
+			}
+		}
 
 		if isEmpty {
 			myGame.RemoveRoom(trueRoom)
@@ -202,6 +211,14 @@ func leaveRoomAction(client *game.Client, roomName string) {
 				client.Socket.SendToSocket(client.Socket, cbMsg)
 				// Broadcast his departure from the channel to other clients
 				sendRoomDepartureToAll(client, room)
+
+				if room.IsRoundGoing {
+					if room.GetNbClients() < 2 {
+						endRound(client, room, "NOT_ENOUGH_CLIENTS")
+					} else if room.IsDrawer(client) {
+						endRound(client, room, "DRAWER_LEFT")
+					}
+				}
 
 				if isEmpty {
 					myGame.RemoveRoom(room)
@@ -371,6 +388,8 @@ func handleRoundTimer(client *game.Client, room *game.Room) {
 
 	go func() {
 		i := 1
+		revealInterval := room.RoundDuration / room.Word.Length
+		log.Printf("On doit reveal une lettre toutes les %v sec", revealInterval)
 		defer func() {
 			room.StopTicker()
 			endRound(client, room, "TIMESUP")
@@ -435,14 +454,14 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 
 	// Wait a moment, so clients can see score and stuff.
 	go func() {
-	time.Sleep(5 * time.Second)
+		time.Sleep(5 * time.Second)
 
-	if room.GetNbClients() >= 2 && room.ActualRound < room.TotalRounds {
-		startRound(client, room)
-	} else {
+		if room.GetNbClients() >= 2 && room.ActualRound < room.TotalRounds {
+			startRound(client, room)
+		} else {
 
-		// stop room
-	}
+			// stop room
+		}
 	}()
 }
 
