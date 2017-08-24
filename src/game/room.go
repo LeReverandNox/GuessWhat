@@ -29,6 +29,7 @@ type Room struct {
 	PassedSeconds   int
 	baseScore       int
 	drawerBaseScore int
+	reaveledLetters []string
 }
 
 // NewRoom creates a new room and returns it
@@ -238,6 +239,51 @@ func (room *Room) IsDrawer(client *Client) bool {
 		return true
 	}
 	return false
+}
+
+// GetRandomWordLetter returns a random word from the letter, or an error if the word is alreay revealed - 1
+func (room *Room) GetRandomWordLetter() (string, int, error) {
+	var (
+		i      int
+		letter string
+	)
+	for !room.isWordAlmostRevealed() {
+		letters := room.getUnrevealedLetters()
+		i = tools.RandomInt(len(letters))
+		letter = string(letters[i])
+		room.reaveledLetters = append(room.reaveledLetters, letter)
+
+		return letter, i, nil
+
+	}
+	return "", 0, errors.New("The word is already revealed")
+}
+
+func (room *Room) isLetterRevealed(letter string) bool {
+	for _, revealedLetter := range room.reaveledLetters {
+		if letter == revealedLetter {
+			return true
+		}
+	}
+	return false
+}
+
+func (room *Room) isWordAlmostRevealed() bool {
+	if len(room.reaveledLetters) == (room.Word.Length - 1) {
+		return true
+	}
+	return false
+}
+
+func (room *Room) getUnrevealedLetters() []string {
+	res := make([]string, 0)
+	for _, c := range room.Word.Value {
+		char := string(c)
+		if !room.isLetterRevealed(char) {
+			res = append(res, char)
+		}
+	}
+	return res
 }
 
 // ListClients lists the clients of the room
