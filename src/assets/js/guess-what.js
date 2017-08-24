@@ -143,11 +143,11 @@
             case "new_round_start":
                 this.onNewRoundStart(data);
                 break;
+            case "round_end":
+                this.onRoundEnd(data)
+                break;
             case "clean_canvas":
                 this.onCleanCanvas(data);
-                break;
-            case "new_round_start":
-                this.onNewRoundStart(data);
                 break;
             case "reveal_letter":
                 this.onRevealLetter(data);
@@ -310,10 +310,6 @@
         this.cleanCanvas();
     };
 
-    GuessWhat.prototype.onNewRoundStart = function (e) {
-        this.cleanCanvas();
-    };
-
     GuessWhat.prototype.colorClick = function (e) {
         var tar = e.target;
         if (tar.tagName === "BUTTON") {
@@ -353,6 +349,8 @@
     };
 
     GuessWhat.prototype.onNewRoundStart = function (e) {
+        this.cleanCanvas();
+
         this.secretWord = "_".repeat(e.word_length);
         this.secretWordP.innerHTML = this.secretWord;
         this.startTimer(e.room.RoundDuration);
@@ -367,19 +365,25 @@
     };
 
     GuessWhat.prototype.onYouAreDrawing = function (e) {
+        this.cleanCanvas();
+
         this.secretWord = e.word.Value;
         this.secretWordP.innerHTML = this.secretWord;
         this.startTimer(e.room.RoundDuration);
     };
 
     GuessWhat.prototype.startTimer = function (duration) {
-        this.countdownIntv = makeTimer(duration, this.countdownHolder);
+        this.countdownIntv = makeTimer(duration, this.countdown);
     }
 
     GuessWhat.prototype.stopTimer = function () {
         clearInterval(this.countdownIntv);
         this.countdown.innerHTML = "";
     };
+
+    GuessWhat.prototype.onRoundEnd = function (e) {
+        this.stopTimer();
+    }
 
     function replaceAt (string, index, replacement) {
         return string.substr(0, index) + replacement + string.substr(index + replacement.length);
