@@ -118,8 +118,11 @@ func sendMessageAction(client *game.Client, content string) {
 				msgMap["channel"] = room.Name
 				client.Socket.SendToRoom(room, msgMap)
 			} else {
-				// Send a 'youFindTheWord' event
-				// Send a 'XXX find the word' event
+				updateMsg := make(map[string]interface{})
+				updateMsg["action"] = "has_found_word"
+				updateMsg["client"] = client
+				updateMsg["room"] = room
+				client.Socket.SendToRoom(room, updateMsg)
 
 				if room.GetNbWinners() == room.GetNbClients()-1 {
 					endRound(client, room, "EVERYONE_WINS")
@@ -299,8 +302,6 @@ func startRoomAction(client *game.Client, roomName string) {
 			} else {
 				room.Start()
 
-				startRound(client, room)
-
 				// Send to room clients about it's state
 				updateMsg := make(map[string]interface{})
 				updateMsg["action"] = "room_start"
@@ -309,6 +310,8 @@ func startRoomAction(client *game.Client, roomName string) {
 
 				cbMsg["success"] = true
 				client.Socket.SendToSocket(client.Socket, cbMsg)
+
+				startRound(client, room)
 			}
 		}
 	}
@@ -374,12 +377,20 @@ func startRound(client *game.Client, room *game.Room) {
 	handleRoundTimer(client, room)
 
 	// Send to room clients about it's state
-	updateMsg := make(map[string]interface{})
-	updateMsg["action"] = "new_round_start"
-	updateMsg["room"] = room
-	updateMsg["drawer"] = drawer
-	updateMsg["word"] = room.GetWord().Value
-	client.Socket.SendToRoom(room, updateMsg)
+	roomStartMsg := make(map[string]interface{})
+	roomStartMsg["action"] = "new_round_start"
+	roomStartMsg["drawer"] = room.Drawer
+	roomStartMsg["room"] = room
+	roomStartMsg["word_length"] = room.GetWord().Length
+	room.Drawer.Socket.BroadcastToRoom(room, roomStartMsg)
+
+	// Send the word to the drawer
+	drawerMsg := make(map[string]interface{})
+	drawerMsg["action"] = "you_are_drawing"
+	drawerMsg["drawer"] = room.Drawer
+	drawerMsg["room"] = room
+	drawerMsg["word"] = room.GetWord()
+	room.Drawer.Socket.SendToSocket(room.Drawer.Socket, drawerMsg)
 }
 
 func handleRoundTimer(client *game.Client, room *game.Room) {
