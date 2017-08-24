@@ -411,6 +411,7 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 	}
 
 	// Wait a moment, so clients can see score and stuff.
+	go func() {
 	time.Sleep(5 * time.Second)
 
 	if room.GetNbClients() >= 2 && room.ActualRound < room.TotalRounds {
@@ -419,6 +420,7 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 
 		// stop room
 	}
+	}()
 }
 
 func askDrawerForImage(room *game.Room) {
