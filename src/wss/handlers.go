@@ -93,18 +93,28 @@ func onDisconnection(client *game.Client, err error) error {
 func sendMessageAction(client *game.Client, content string) {
 	content = tools.Sanitize(content)
 	if len(content) > 0 {
-		if room := myGame.GetCurrentClientRoom(client); room != nil {
-			trueRoom := room.(*game.Room)
-			msg := trueRoom.AddMessage(client, content)
+		if roomInt := myGame.GetCurrentClientRoom(client); roomInt != nil {
+			room := roomInt.(*game.Room)
+			msg := room.AddMessage(client, content)
 
-			// Send the message to the room
-			msgMap := structs.Map(msg)
-			msgMap["action"] = "incoming_room_message"
-			msgMap["channel"] = trueRoom.Name
-			client.Socket.SendToRoom(trueRoom, msgMap)
+			hasWon := false
+			if room.IsRoundGoing && client.Nickname != room.Drawer.Nickname {
+				hasWon = parseForAnswer(client, room, msg)
+			}
 
-			if trueRoom.IsRoundGoing && client.Nickname != trueRoom.Drawer.Nickname {
-				parseForAnswer(client, trueRoom, msg)
+			if !hasWon {
+				// Send the message to the room
+				msgMap := structs.Map(msg)
+				msgMap["action"] = "incoming_room_message"
+				msgMap["channel"] = room.Name
+				client.Socket.SendToRoom(room, msgMap)
+			} else {
+				// Send a 'youFindTheWord' event
+				// Send a 'XXX find the word' event
+
+				if room.GetNbWinners() == room.GetNbClients()-1 {
+					endRound(client, room, "EVERYONE_WINS")
+				}
 			}
 		} else {
 			msg := myGame.AddMessage(client, content)
@@ -304,17 +314,20 @@ func sendImageAction(client *game.Client, msg map[string]string) {
 
 // Non actions
 
-func parseForAnswer(proposer *game.Client, room *game.Room, message *game.Message) {
+func parseForAnswer(proposer *game.Client, room *game.Room, message *game.Message) bool {
 	dist := tools.Distance(message.Content, room.Word.Value)
 	if dist == 0 {
-		endRound(proposer, room, "WIN")
+		room.AddWinner(proposer)
+		return true
 	} else if dist <= 2 {
 		updateMsg := make(map[string]interface{})
 		updateMsg["action"] = "close_word"
 		updateMsg["room"] = room
 		updateMsg["proposed_word"] = message.Content
 		proposer.Socket.SendToSocket(proposer.Socket, updateMsg)
+		return false
 	}
+	return false
 }
 
 func startRound(client *game.Client, room *game.Room) {
@@ -325,6 +338,7 @@ func startRound(client *game.Client, room *game.Room) {
 	word := myGame.PickRandomWord()
 	room.SetWord(word)
 	room.ResetImage()
+	room.CleanWinners()
 	room.IncrementRound()
 	room.StartRound()
 	handleRoundTimer(client, room)
@@ -343,7 +357,7 @@ func handleRoundTimer(client *game.Client, room *game.Room) {
 	roundEnd := room.SetRoundEnd(time.Now().Local().Add(time.Second * time.Duration(room.RoundDuration+1)))
 
 	go func() {
-		iteration := 1
+		i := 1
 		defer func() {
 			room.StopTicker()
 			endRound(client, room, "TIMESUP")
@@ -355,8 +369,9 @@ func handleRoundTimer(client *game.Client, room *game.Room) {
 			}
 
 			// TODO: implement letter revelation according to iteration
-			log.Printf("Iteration : %v", iteration)
-			iteration++
+			// log.Printf("Iteration : %v", i)
+			i++
+			room.PassedSeconds = i
 		}
 	}()
 }
@@ -373,13 +388,12 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 	room.StopRound()
 
 	switch reason {
-	case "WIN":
-		log.Printf("%v a gagné", client.Nickname)
-		updateMsg["winner"] = client
-		updateMsg["reason"] = "WIN"
+	case "EVERYONE_WINS":
+		updateMsg["clients"] = room.Clients
+		updateMsg["room"] = room
+		updateMsg["reason"] = "EVERYONE_WINS"
 
-		// TODO: compute score according to the timer...
-		client.AddToScore(50)
+		room.ComputeClientsPoints()
 		client.Socket.SendToRoom(room, updateMsg)
 	}
 
