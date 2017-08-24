@@ -399,6 +399,7 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 	updateMsg["room"] = room
 
 	room.StopRound()
+	room.StopTicker()
 
 	switch reason {
 	case "EVERYONE_WINS":
@@ -407,6 +408,20 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 		updateMsg["reason"] = "EVERYONE_WINS"
 
 		room.ComputeClientsPoints()
+		client.Socket.SendToRoom(room, updateMsg)
+	case "DRAWER_LEFT":
+		updateMsg["clients"] = room.Clients
+		updateMsg["room"] = room
+		updateMsg["reason"] = "DRAWER_LEFT"
+
+		room.ComputeClientsPoints()
+		client.Socket.SendToRoom(room, updateMsg)
+	case "NOT_ENOUGH_CLIENTS":
+		log.Printf("PLUS ASSEZ DE CLIENTS")
+		updateMsg["room"] = room
+		updateMsg["reason"] = "NOT_ENOUGH_CLIENTS"
+
+		// NEED TO CLOSE THE ROOM
 		client.Socket.SendToRoom(room, updateMsg)
 	}
 
