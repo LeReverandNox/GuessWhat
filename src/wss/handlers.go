@@ -381,16 +381,24 @@ func handleRoundTimer(client *game.Client, room *game.Room) {
 				break
 			}
 
-			// TODO: implement letter revelation according to iteration
-			// log.Printf("Iteration : %v", i)
 			i++
 			room.PassedSeconds = i
+
+			if i%revealInterval == 0 {
+				revealWordLetter(room)
+			}
 		}
 	}()
 }
 
-func revealWordLetter(client *game.Client, room *game.Room) {
-	log.Printf("On va reveler une lettre")
+func revealWordLetter(room *game.Room) {
+	if letter, i, err := room.GetRandomWordLetter(); err == nil {
+		updateMsg := make(map[string]interface{})
+		updateMsg["action"] = "reveal_letter"
+		updateMsg["letter"] = letter
+		updateMsg["pos"] = i
+		room.Drawer.Socket.BroadcastToRoom(room, updateMsg)
+	}
 }
 
 func endRound(client *game.Client, room *game.Room, reason string) {
