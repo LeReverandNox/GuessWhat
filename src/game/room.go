@@ -222,14 +222,14 @@ func (room *Room) ComputeClientsPoints() {
 		b := 6.805 * float64(room.RoundDuration-winner.WinTime)
 		c := 0.0441 * math.Pow(float64(room.RoundDuration-winner.WinTime), 2)
 		f64Score := a + b - c
-		winner.Client.Score = int(f64Score)
+		winner.Client.Score += int(f64Score)
 	}
 	if room.GetNbWinners() > 0 {
 		a := 12.18992
 		b := 1.600994 * float64(room.RoundDuration-room.Winners[0].WinTime)
 		c := 0.0101963 * math.Pow(float64(room.RoundDuration-room.Winners[0].WinTime), 2)
 		f64Score := a + b - c
-		room.Drawer.Score = int(f64Score)
+		room.Drawer.Score += int(f64Score)
 	}
 }
 
