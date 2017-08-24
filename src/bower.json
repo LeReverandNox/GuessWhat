@@ -1,0 +1,13 @@
+{
+  "name": "GuessWhat",
+  "description": "The poor's man online Pictionary, with Go backend",
+  "homepage": "https://github.com/LeReverandNox/GuessWhat",
+  "authors": [
+    "laidet_r <rodolphe.laidet@epitech.eu>"
+  ],
+  "main": "main.go",
+  "license": "MIT",
+  "dependencies": {
+    "countdownjs": "^2.6.0"
+  }
+}
