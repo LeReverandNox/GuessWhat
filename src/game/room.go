@@ -10,26 +10,26 @@ import (
 )
 
 type Room struct {
-	Name            string
-	Messages        []*Message
-	Clients         []*Client
-	NeedingDrawing  []*Client
-	Drawer          *Client
-	Owner           *Client
-	Image           string
-	word            *Word
-	IsStarted       bool
-	TotalRounds     int
-	ActualRound     int
-	IsRoundGoing    bool
-	RoundDuration   int
-	roundEnd        time.Time
-	roundTicker     *time.Ticker
-	Winners         []*Winner
-	PassedSeconds   int
-	baseScore       int
-	drawerBaseScore int
-	reaveledLetters []string
+	Name                   string
+	Messages               []*Message
+	Clients                []*Client
+	NeedingDrawing         []*Client
+	Drawer                 *Client
+	Owner                  *Client
+	Image                  string
+	word                   *Word
+	IsStarted              bool
+	TotalRounds            int
+	ActualRound            int
+	IsRoundGoing           bool
+	RoundDuration          int
+	roundEnd               time.Time
+	roundTicker            *time.Ticker
+	Winners                []*Winner
+	PassedSeconds          int
+	baseScore              int
+	drawerBaseScore        int
+	revealedLettersIndexes []int
 }
 
 // NewRoom creates a new room and returns it
@@ -46,6 +46,8 @@ func NewRoom(name string, owner *Client) *Room {
 	room.RoundDuration = 80
 	room.baseScore = 300
 	room.drawerBaseScore = 75
+	room.Winners = make([]*Winner, 0)
+	room.revealedLettersIndexes = make([]int, 0)
 	return &room
 }
 
@@ -248,24 +250,26 @@ func (room *Room) IsDrawer(client *Client) bool {
 // GetRandomWordLetter returns a random word from the letter, or an error if the word is alreay revealed - 1
 func (room *Room) GetRandomWordLetter() (string, int, error) {
 	var (
-		i      int
+		index  int
 		letter string
 	)
 	for !room.isWordAlmostRevealed() {
-		letters := room.getUnrevealedLetters()
-		i = tools.RandomInt(len(letters))
-		letter = string(letters[i])
-		room.reaveledLetters = append(room.reaveledLetters, letter)
+		indexes := room.getUnrevealedLettersIndexes()
+		log.Printf("On peut taper dans %v", indexes)
+		i := tools.RandomInt(len(indexes))
+		index = indexes[i]
+		letter = string(room.word.Value[index])
+		room.revealedLettersIndexes = append(room.revealedLettersIndexes, indexes[i])
 
-		return letter, i, nil
+		return letter, index, nil
 
 	}
 	return "", 0, errors.New("The word is already revealed")
 }
 
-func (room *Room) isLetterRevealed(letter string) bool {
-	for _, revealedLetter := range room.reaveledLetters {
-		if letter == revealedLetter {
+func (room *Room) isLetterRevealed(index int) bool {
+	for _, revealedLetter := range room.revealedLettersIndexes {
+		if index == revealedLetter {
 			return true
 		}
 	}
@@ -273,21 +277,24 @@ func (room *Room) isLetterRevealed(letter string) bool {
 }
 
 func (room *Room) isWordAlmostRevealed() bool {
-	if len(room.reaveledLetters) == (room.word.Length - 1) {
+	if len(room.revealedLettersIndexes) == (room.word.Length - 1) {
 		return true
 	}
 	return false
 }
 
-func (room *Room) getUnrevealedLetters() []string {
-	res := make([]string, 0)
-	for _, c := range room.word.Value {
-		char := string(c)
-		if !room.isLetterRevealed(char) {
-			res = append(res, char)
+func (room *Room) getUnrevealedLettersIndexes() []int {
+	res := make([]int, 0)
+	for i := range room.word.Value {
+		if !room.isLetterRevealed(i) {
+			res = append(res, i)
 		}
 	}
 	return res
+}
+
+func (room *Room) ClealRevealdLettersIndexes() {
+	room.revealedLettersIndexes = room.revealedLettersIndexes[:0]
 }
 
 // ListClients lists the clients of the room
