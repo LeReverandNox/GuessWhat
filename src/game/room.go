@@ -255,7 +255,6 @@ func (room *Room) GetRandomWordLetter() (string, int, error) {
 	)
 	for !room.isWordAlmostRevealed() {
 		indexes := room.getUnrevealedLettersIndexes()
-		log.Printf("On peut taper dans %v", indexes)
 		i := tools.RandomInt(len(indexes))
 		index = indexes[i]
 		letter = string(room.word.Value[index])

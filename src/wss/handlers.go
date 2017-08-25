@@ -410,7 +410,7 @@ func handleRoundTimer(client *game.Client, room *game.Room) {
 
 	go func() {
 		i := 1
-		revealInterval := room.RoundDuration / room.GetWord().Length
+		revealInterval := (room.RoundDuration / room.GetWord().Length) * 2
 
 		defer func() {
 			room.StopTicker()
