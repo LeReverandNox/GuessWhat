@@ -113,10 +113,12 @@ func sendMessageAction(client *game.Client, content string) {
 
 			if !hasWon && !room.IsDrawer(client) {
 				// Send the message to the room
+				msgObject := make(map[string]interface{}, 10)
 				msgMap := structs.Map(msg)
-				msgMap["action"] = "incoming_room_message"
-				msgMap["channel"] = room.Name
-				client.Socket.SendToRoom(room, msgMap)
+				msgObject["action"] = "incoming_room_message"
+				msgObject["message"] = msgMap
+				msgObject["channel"] = room.Name
+				client.Socket.SendToRoom(room, msgObject)
 			} else {
 				updateMsg := make(map[string]interface{})
 				updateMsg["action"] = "has_found_word"
