@@ -12,6 +12,14 @@
         this.lastX;
         this.lastY;
         this.secretWord = "";
+
+        this.rooms = [];
+        this.generalChatMessages = [];
+        this.generalClients = [];
+        this.roomChatMessages = [];
+        this.roomClients = [];
+
+        this.isInRoom = false;
     };
 
     GuessWhat.prototype.startEventListeners = function () {
@@ -31,6 +39,13 @@
     };
 
     GuessWhat.prototype.registerElements = function () {
+        this.$connexionBlock = $("#connexion_block");
+        this.$gameBlock = $("#game_block");
+
+        this.$chatHolder = $("#chat_holder");
+        this.$roomsHolder = $("#rooms_holder");
+        this.$clientsHolder = $("#clients_holder");
+
         this.connexionButton = document.getElementById("connexion_button");
         this.nicknameInput = document.getElementById("nickname");
 
@@ -158,6 +173,27 @@
             case "round_is_going":
                 this.onRoundIsGoing(data);
                 break;
+            case "connexion_cb":
+                this.onConnexionCb(data);
+                break;
+            case "incoming_all_global_message":
+                this.onIncomingAllGlobalMessage(data);
+                break;
+            case "incoming_global_message":
+                this.onIncomingGlobalMessage(data);
+                break;
+            case "incoming_all_rooms":
+                this.onIncomingAllRooms(data);
+                break;
+            case "incoming_room":
+                this.onIncomingRoom(data);
+                break;
+            case "incoming_all_global_users":
+                this.onIncomingAllGlobalUsers(data);
+                break;
+            case "incoming_client":
+                this.onIncomingGlobalClient(data);
+                break;
             default:
                 console.log(data);
                 break;
@@ -275,6 +311,9 @@
         var self = this;
         this.registerElements();
         this.startEventListeners();
+
+        this.$connexionBlock.show();
+        this.$gameBlock.hide();
     };
 
     GuessWhat.prototype.getCanvasBase64 = function () {
@@ -383,6 +422,7 @@
 
     GuessWhat.prototype.onRoundEnd = function (e) {
         this.stopTimer();
+        console.log(e);
     }
 
     GuessWhat.prototype.onRoundIsGoing = function (e) {
@@ -407,6 +447,98 @@
         this.secretWord = replaceAt(this.secretWord, index, letter)
         this.secretWordP.innerHTML = this.secretWord;
     };
+
+    GuessWhat.prototype.onConnexionCb = function (data) {
+        if (data.success) {
+            this.$connexionBlock.hide();
+            this.$gameBlock.show();
+        } else {
+            alert(data.reason);
+        }
+    };
+
+    GuessWhat.prototype.displayRooms = function () {
+        var rooms = this.rooms;
+        var $ul = $("<ul id=\"rooms\"></ul>");
+        var $li;
+        rooms.map(function (room) {
+            $li = $("<li class=\"room\">" + room.Name + "</li>");
+            $ul.append($li);
+        });
+
+        this.$roomsHolder.children("ul").remove();
+        this.$roomsHolder.append($ul);
+    };
+
+    GuessWhat.prototype.displayClients = function () {
+        var clients = (this.isInRoom) ? this.roomClients : this.generalClients;
+        var $ul = $("<ul id=\"clients\"></ul>");
+        var $li;
+        clients.map(function (client) {
+            $li = $("<li class=\"client\">" + client.Nickname + "</li>");
+            $ul.append($li);
+        });
+
+        this.$clientsHolder.children("ul").remove();
+        this.$clientsHolder.append($ul);
+
+    };
+
+    GuessWhat.prototype.displayChat = function () {
+        var messages = (this.isInRoom) ? this.roomChatMessages : this.generalChatMessages;
+        var $ul = $("<ul id=\"chat_messages\"></ul>");
+        var $li;
+        messages.map(function (message) {
+            $li = $("<li class=\"chat_message\">" + message.Sender.Nickname +" : " + message.Content + "</li>");
+            $ul.append($li);
+        });
+
+        this.$chatHolder.children("ul").remove();
+        this.$chatHolder.append($ul);
+    };
+
+    GuessWhat.prototype.displayInfos = function () {
+
+    };
+
+    GuessWhat.prototype.displayEndRound = function () {
+
+    };
+
+    GuessWhat.prototype.onIncomingAllGlobalMessage = function (e) {
+        var messages = e.messages;
+        this.generalChatMessages = messages;
+        this.displayChat();
+    };
+
+    GuessWhat.prototype.onIncomingGlobalMessage = function (e) {
+        this.generalChatMessages.push(e.message);
+        this.displayChat();
+    };
+
+    GuessWhat.prototype.onIncomingAllRooms = function (e) {
+        var rooms = e.rooms;
+        this.rooms = rooms;
+        this.displayRooms();
+    }
+
+    GuessWhat.prototype.onIncomingRoom = function (e) {
+        this.rooms.push(e.room);
+        this.displayRooms();
+    }
+
+    GuessWhat.prototype.onIncomingAllGlobalUsers = function (e) {
+        console.log(e);
+        var clients = e.clients;
+        this.generalClients = clients;
+        this.displayClients();
+    };
+
+    GuessWhat.prototype.onIncomingGlobalClient = function (e) {
+        console.log(e);
+        this.generalClients.push(e.client);
+        this.displayClients();
+    }
 
     function replaceAt (string, index, replacement) {
         return string.substr(0, index) + replacement + string.substr(index + replacement.length);
