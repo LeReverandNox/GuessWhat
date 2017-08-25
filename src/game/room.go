@@ -241,8 +241,10 @@ func (room *Room) ComputeClientsPoints() {
 }
 
 func (room *Room) IsDrawer(client *Client) bool {
-	if client.Nickname == room.Drawer.Nickname {
-		return true
+	if room.Drawer != nil {
+		if client.Nickname == room.Drawer.Nickname {
+			return true
+		}
 	}
 	return false
 }
