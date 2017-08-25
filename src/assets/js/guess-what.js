@@ -25,12 +25,14 @@
     GuessWhat.prototype.startEventListeners = function () {
         this.connexionButton.addEventListener("click", this.connect.bind(this));
         this.sendMessageButton.addEventListener("click", this.sendMessage.bind(this));
-        this.joinRoomButton.addEventListener("click", this.joinRoom.bind(this));
+        this.createRoomButton.addEventListener("click", this.createRoom.bind(this));
         this.leaveRoomButton.addEventListener("click", this.leaveRoom.bind(this));
         this.startRoomButton.addEventListener("click", this.startRoom.bind(this));
         this.colorHolder.addEventListener("click", this.colorClick.bind(this));
         this.thicknessHolder.addEventListener("click", this.thicknessClick.bind(this));
         this.toolsHolder.addEventListener("click", this.toolsClick.bind(this));
+
+        this.$roomsHolder.on("click", this.roomClick.bind(this));
 
         this.canvas.addEventListener("mousedown", this.onLocalCanvasMouseDown.bind(this));
         this.canvas.addEventListener("mousemove", this.onLocalCanvasMouseMove.bind(this));
@@ -45,6 +47,7 @@
         this.$chatHolder = $("#chat_holder");
         this.$roomsHolder = $("#rooms_holder");
         this.$clientsHolder = $("#clients_holder");
+        this.$drawerToolsHolder = $("#drawer_tools_holder");
 
         this.connexionButton = document.getElementById("connexion_button");
         this.nicknameInput = document.getElementById("nickname");
@@ -52,7 +55,7 @@
         this.sendMessageButton = document.getElementById("send_message");
         this.messageInput = document.getElementById("message");
 
-        this.joinRoomButton = document.getElementById("join_room");
+        this.createRoomButton = document.getElementById("create_room");
         this.leaveRoomButton = document.getElementById("leave_room");
         this.startRoomButton = document.getElementById("start_room");
         this.roomInput = document.getElementById("room");
@@ -97,7 +100,19 @@
         this.socket.send(msg);
     };
 
-    GuessWhat.prototype.joinRoom = function () {
+    GuessWhat.prototype.joinRoom = function (roomName) {
+        if (!this.isConnected)
+            return false
+
+        var msg = JSON.stringify({
+            action: "join_room",
+            room: roomName
+        });
+        this.socket.send(msg);
+    };
+
+
+    GuessWhat.prototype.createRoom = function () {
         if (!this.isConnected)
             return false
 
@@ -211,6 +226,15 @@
                 break;
             case "leaving_client":
                 this.onLeavingGlobalClient(data);
+                break;
+            case "incoming_all_room_clients":
+                this.onIncomingAllRoomClients(data);
+                break
+            case "incoming_room_client":
+                this.onIncomingRoomClient(data);
+                break;
+            case "leaving_room_client":
+                this.onLeavingRoomClient(data);
                 break;
             default:
                 console.log(data);
@@ -332,6 +356,7 @@
 
         this.$connexionBlock.show();
         this.$gameBlock.hide();
+        this.$drawerToolsHolder.hide();
     };
 
     GuessWhat.prototype.getCanvasBase64 = function () {
@@ -407,6 +432,13 @@
         }
     };
 
+    GuessWhat.prototype.roomClick = function (e) {
+        var tar = e.target;
+        if (tar.tagName === "LI") {
+            this.joinRoom(tar.dataset.room);
+        }
+    };
+
     GuessWhat.prototype.askCleanCanvas = function () {
         if (!this.isConnected)
             return false
@@ -420,6 +452,7 @@
 
     GuessWhat.prototype.onNewRoundStart = function (e) {
         this.cleanCanvas();
+        this.$drawerToolsHolder.hide();
 
         this.initSecretWord(e.word_length);
         this.startTimer(e.room.RoundDuration);
@@ -433,6 +466,7 @@
 
     GuessWhat.prototype.onYouAreDrawing = function (e) {
         this.cleanCanvas();
+        this.$drawerToolsHolder.show();
 
         this.secretWord = e.word.Value;
         this.secretWordP.innerHTML = this.secretWord;
@@ -490,7 +524,7 @@
         var $ul = $("<ul id=\"rooms\"></ul>");
         var $li;
         rooms.map(function (room) {
-            $li = $("<li class=\"room\">" + room.Name + "</li>");
+            $li = $("<li class=\"room\" data-room=\"" + room.Name + "\">" + room.Name + "</li>");
             $ul.append($li);
         });
 
@@ -593,10 +627,32 @@
     };
 
     GuessWhat.prototype.onIncomingRoomMessage = function (e) {
-        console.log(e);
         this.roomChatMessages.push(e.message);
         this.displayChat();
     };
+
+    GuessWhat.prototype.onIncomingAllRoomClients = function (e) {
+        var clients = e.clients;
+        this.roomClients = clients;
+        this.displayClients();
+    };
+
+
+    GuessWhat.prototype.onIncomingRoomClient = function (e) {
+        this.roomClients.push(e.client);
+        this.displayClients();
+    };
+
+    GuessWhat.prototype.onLeavingRoomClient = function (e) {
+        var clientToRemove = e.client;
+        this.roomClients = this.roomClients.filter(function (client, i) {
+            if (client.Nickname !== clientToRemove.Nickname) {
+                return true;
+            }
+        })
+        this.displayClients();
+    };
+
     function replaceAt (string, index, replacement) {
         return string.substr(0, index) + replacement + string.substr(index + replacement.length);
     }
