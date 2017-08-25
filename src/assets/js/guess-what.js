@@ -237,6 +237,10 @@
             case "leaving_room_client":
                 this.onLeavingRoomClient(data);
                 break;
+            // Round events
+            case "has_found_word":
+                this.onHasFoundWord(data);
+                break;
             default:
                 console.log(data);
                 break;
@@ -545,8 +549,12 @@
         var clients = (this.isInRoom) ? this.roomClients : this.generalClients;
         var $ul = $("<ul id=\"clients\"></ul>");
         var $li;
+        var score;
+        var self = this;
+
         clients.map(function (client) {
-            $li = $("<li class=\"client\">" + client.Nickname + "</li>");
+            score = self.isInRoom ? " Score : " + client.Score : ""
+            $li = $("<li class=\"client\">" + client.Nickname + score + "</li>");
             $ul.append($li);
         });
 
@@ -660,6 +668,19 @@
             }
         })
         this.displayClients();
+    };
+
+    GuessWhat.prototype.onHasFoundWord = function (e) {
+        var client = e.client;
+        var message = {
+            Content: client.Nickname + " found the word",
+            Sender : {
+                Nickname: client.Nickname
+            }
+        }
+        this.roomChatMessages.push(message);
+        this.displayChat();
+
     };
 
     function replaceAt (string, index, replacement) {
