@@ -171,8 +171,6 @@ func joinRoomAction(client *game.Client, roomName string) {
 				client.Socket.Broadcast(myGame, updateMsg)
 			}
 			// Send to the client all the infos about the joined room.
-			// TODO: send message to indicate running round !
-			// So the client cant start timer at right time, and display underscores...
 			sendAllRoomMessagesTo(client, room)
 			sendAllRoomClientsTo(client, room)
 
