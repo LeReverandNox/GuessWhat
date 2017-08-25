@@ -174,6 +174,8 @@ func joinRoomAction(client *game.Client, roomName string) {
 			sendAllRoomMessagesTo(client, room)
 			sendAllRoomClientsTo(client, room)
 
+			// TODO: send message to indicate running round !
+
 			// Send the current image to the client if the room is started
 			if room.IsRoundGoing {
 				room.AddDrawingNeeder(client)
@@ -370,6 +372,7 @@ func startRound(client *game.Client, room *game.Room) {
 	// Pick and set random word
 	word := myGame.PickRandomWord()
 	room.SetWord(word)
+	room.ClealRevealdLettersIndexes()
 	room.ResetImage()
 	room.CleanWinners()
 	room.IncrementRound()
@@ -444,6 +447,13 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 		updateMsg["clients"] = room.Clients
 		updateMsg["room"] = room
 		updateMsg["reason"] = "EVERYONE_WINS"
+
+		room.ComputeClientsPoints()
+		client.Socket.SendToRoom(room, updateMsg)
+	case "TIMESUP":
+		updateMsg["clients"] = room.Clients
+		updateMsg["room"] = room
+		updateMsg["reason"] = "TIMESUP"
 
 		room.ComputeClientsPoints()
 		client.Socket.SendToRoom(room, updateMsg)
