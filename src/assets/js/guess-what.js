@@ -155,6 +155,9 @@
             case "you_are_drawing":
                 this.onYouAreDrawing(data);
                 break;
+            case "round_is_going":
+                this.onRoundIsGoing(data);
+                break;
             default:
                 console.log(data);
                 break;
@@ -351,17 +354,14 @@
     GuessWhat.prototype.onNewRoundStart = function (e) {
         this.cleanCanvas();
 
-        this.secretWord = "_".repeat(e.word_length);
-        this.secretWordP.innerHTML = this.secretWord;
+        this.initSecretWord(e.word_length);
         this.startTimer(e.room.RoundDuration);
     };
 
     GuessWhat.prototype.onRevealLetter = function (e) {
         var index = e.pos;
         var letter = e.letter;
-        this.secretWord = replaceAt(this.secretWord, index, letter)
-
-        this.secretWordP.innerHTML = this.secretWord;
+        this.updateSecretWord(index, letter);
     };
 
     GuessWhat.prototype.onYouAreDrawing = function (e) {
@@ -384,6 +384,29 @@
     GuessWhat.prototype.onRoundEnd = function (e) {
         this.stopTimer();
     }
+
+    GuessWhat.prototype.onRoundIsGoing = function (e) {
+        var self = this;
+        this.startTimer(e.time_left);
+
+        setTimeout(function () {
+            self.initSecretWord(e.word_length);
+
+            Object.keys(e.revealed_letters).map(function(index) {
+                self.updateSecretWord(parseInt(index), e.revealed_letters[index]);
+            });
+        }, 1000)
+    };
+
+    GuessWhat.prototype.initSecretWord = function (length) {
+        this.secretWord = "_".repeat(length);
+        this.secretWordP.innerHTML = this.secretWord;
+    };
+
+    GuessWhat.prototype.updateSecretWord = function (index, letter) {
+        this.secretWord = replaceAt(this.secretWord, index, letter)
+        this.secretWordP.innerHTML = this.secretWord;
+    };
 
     function replaceAt (string, index, replacement) {
         return string.substr(0, index) + replacement + string.substr(index + replacement.length);
