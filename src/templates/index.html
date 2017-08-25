@@ -28,32 +28,35 @@
         </div>
         <div>
             <input type="text" id="room">
-            <button id="join_room">Join room</button>
+            <button id="create_room">Create room</button>
             <button id="leave_room">Leave room</button>
             <button id="start_room">Start room</button>
         </div>
-        <div id="color_holder">
-            Color:
-            <button data-color="000000">Black</button>
-            <button data-color="FFFFFF">White</button>
-            <button data-color="FF0000">Red</button>
-            <button data-color="0000FF">Blue</button>
-            <button data-color="00FF00">Green</button>
-            <button data-color="FFFF00">Yellow</button>
-            <button data-color="f000ff">Pink</button>
-            <button data-color="ffa500">Orange</button>
+        <div id="drawer_tools_holder">
+            <div id="color_holder">
+                Color:
+                <button data-color="000000">Black</button>
+                <button data-color="FFFFFF">White</button>
+                <button data-color="FF0000">Red</button>
+                <button data-color="0000FF">Blue</button>
+                <button data-color="00FF00">Green</button>
+                <button data-color="FFFF00">Yellow</button>
+                <button data-color="f000ff">Pink</button>
+                <button data-color="ffa500">Orange</button>
+            </div>
+            <div id="thickness_holder">
+                Thickness:
+                <button data-thickness="1">Extra Small</button>
+                <button data-thickness="3">Small</button>
+                <button data-thickness="7">Medium</button>
+                <button data-thickness="15">Large</button>
+                <button data-thickness="25">Extra Large</button>
+            </div>
+            <div id="tools_holder">
+                <button data-tool="clear">Clear</button>
+            </div>
         </div>
-        <div id="thickness_holder">
-            Thickness:
-            <button data-thickness="1">Extra Small</button>
-            <button data-thickness="3">Small</button>
-            <button data-thickness="7">Medium</button>
-            <button data-thickness="15">Large</button>
-            <button data-thickness="25">Extra Large</button>
-        </div>
-        <div id="tools_holder">
-            <button data-tool="clear">Clear</button>
-        </div>
+
         <div id="round_info_holder">
             <div id="word_holder">
                 <p id="secret_word"></p>
