@@ -48,6 +48,7 @@
         this.$roomsHolder = $("#rooms_holder");
         this.$clientsHolder = $("#clients_holder");
         this.$drawerToolsHolder = $("#drawer_tools_holder");
+        this.$roundInfoHolder = $("#round_info_holder");
 
         this.connexionButton = document.getElementById("connexion_button");
         this.nicknameInput = document.getElementById("nickname");
@@ -357,6 +358,7 @@
         this.$connexionBlock.show();
         this.$gameBlock.hide();
         this.$drawerToolsHolder.hide();
+        this.$roundInfoHolder.hide();
     };
 
     GuessWhat.prototype.getCanvasBase64 = function () {
@@ -403,6 +405,8 @@
         this.displayChat();
 
         this.cleanCanvas();
+        this.$roundInfoHolder.hide();
+        this.stopTimer();
     };
 
     GuessWhat.prototype.colorClick = function (e) {
@@ -456,6 +460,8 @@
 
         this.initSecretWord(e.word_length);
         this.startTimer(e.room.RoundDuration);
+
+        this.$roundInfoHolder.show();
     };
 
     GuessWhat.prototype.onRevealLetter = function (e) {
@@ -471,6 +477,7 @@
         this.secretWord = e.word.Value;
         this.secretWordP.innerHTML = this.secretWord;
         this.startTimer(e.room.RoundDuration);
+        this.$roundInfoHolder.show();
     };
 
     GuessWhat.prototype.startTimer = function (duration) {
@@ -484,6 +491,7 @@
 
     GuessWhat.prototype.onRoundEnd = function (e) {
         this.stopTimer();
+        this.$roundInfoHolder.hide()
         console.log(e);
     }
 
@@ -497,6 +505,7 @@
             Object.keys(e.revealed_letters).map(function(index) {
                 self.updateSecretWord(parseInt(index), e.revealed_letters[index]);
             });
+            self.$roundInfoHolder.show();
         }, 1000)
     };
 
