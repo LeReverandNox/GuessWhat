@@ -297,6 +297,16 @@ func (room *Room) ClealRevealdLettersIndexes() {
 	room.revealedLettersIndexes = room.revealedLettersIndexes[:0]
 }
 
+func (room *Room) GetRevealedLetters() map[int]string {
+	res := make(map[int]string, 0)
+	for i, c := range room.word.Value {
+		if room.isLetterRevealed(i) {
+			res[i] = string(c)
+		}
+	}
+	return res
+}
+
 // ListClients lists the clients of the room
 func (room *Room) ListClients() {
 	log.Println("Voici les clients de la channel")
