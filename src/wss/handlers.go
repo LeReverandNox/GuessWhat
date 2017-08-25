@@ -171,13 +171,21 @@ func joinRoomAction(client *game.Client, roomName string) {
 				client.Socket.Broadcast(myGame, updateMsg)
 			}
 			// Send to the client all the infos about the joined room.
+			// TODO: send message to indicate running round !
+			// So the client cant start timer at right time, and display underscores...
 			sendAllRoomMessagesTo(client, room)
 			sendAllRoomClientsTo(client, room)
 
-			// TODO: send message to indicate running round !
-
 			// Send the current image to the client if the room is started
 			if room.IsRoundGoing {
+				goingRoundMsg := make(map[string]interface{})
+				goingRoundMsg["action"] = "round_is_going"
+				goingRoundMsg["room"] = room
+				goingRoundMsg["revealed_letters"] = room.GetRevealedLetters()
+				goingRoundMsg["time_left"] = room.RoundDuration - room.PassedSeconds
+				goingRoundMsg["word_length"] = room.GetWord().Length
+				client.Socket.SendToSocket(client.Socket, goingRoundMsg)
+
 				room.AddDrawingNeeder(client)
 				askDrawerForImage(room)
 			}
@@ -481,7 +489,7 @@ func endRound(client *game.Client, room *game.Room, reason string) {
 			startRound(client, room)
 		} else {
 
-			// stop room
+			// TODO: stop room
 		}
 	}()
 }
