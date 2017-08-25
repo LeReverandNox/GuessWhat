@@ -149,50 +149,68 @@
             case "ask_for_image":
                 this.onAskForImage(data)
                 break;
-            case "join_room_cb":
-                this.onJoinRoomCb(data);
-                break;
-            case "leave_room_cb":
-                this.onLeaveRoomCb(data);
-                break;
-            case "new_round_start":
+                case "new_round_start":
                 this.onNewRoundStart(data);
                 break;
-            case "round_end":
+                case "round_end":
                 this.onRoundEnd(data)
                 break;
-            case "clean_canvas":
+                case "clean_canvas":
                 this.onCleanCanvas(data);
                 break;
-            case "reveal_letter":
+                case "reveal_letter":
                 this.onRevealLetter(data);
                 break;
-            case "you_are_drawing":
+                case "you_are_drawing":
                 this.onYouAreDrawing(data);
                 break;
-            case "round_is_going":
+                case "round_is_going":
                 this.onRoundIsGoing(data);
                 break;
-            case "connexion_cb":
+                case "connexion_cb":
                 this.onConnexionCb(data);
                 break;
-            case "incoming_all_global_message":
+                // Chat events
+                case "incoming_all_global_message":
                 this.onIncomingAllGlobalMessage(data);
                 break;
-            case "incoming_global_message":
+                case "incoming_global_message":
                 this.onIncomingGlobalMessage(data);
                 break;
-            case "incoming_all_rooms":
+                case "incoming_all_room_message":
+                    this.onIncomingAllRoomMessage(data);
+                    break;
+                case "incoming_room_message":
+                    this.onIncomingRoomMessage(data);
+                    break;
+                // Room events
+                case "incoming_all_rooms":
                 this.onIncomingAllRooms(data);
                 break;
-            case "incoming_room":
+                case "incoming_room":
                 this.onIncomingRoom(data);
                 break;
+                case "leaving_room":
+                this.onLeavingRoom(data);
+                break;
+                case "leaving_room":
+                this.onLeavingRoom(data);
+                break;
+                case "join_room_cb":
+                    this.onJoinRoomCb(data);
+                    break;
+                case "leave_room_cb":
+                    this.onLeaveRoomCb(data);
+                    break;
+                // Client events
             case "incoming_all_global_users":
                 this.onIncomingAllGlobalUsers(data);
                 break;
             case "incoming_client":
                 this.onIncomingGlobalClient(data);
+                break;
+            case "leaving_client":
+                this.onLeavingGlobalClient(data);
                 break;
             default:
                 console.log(data);
@@ -345,10 +363,20 @@
     };
 
     GuessWhat.prototype.onJoinRoomCb = function (e) {
+        this.$roomsHolder.hide();
+        this.isInRoom = true;
+        this.displayClients();
+        this.displayChat();
+
         this.cleanCanvas();
     };
 
     GuessWhat.prototype.onLeaveRoomCb = function (e) {
+        this.$roomsHolder.show();
+        this.isInRoom = false;
+        this.displayClients();
+        this.displayChat();
+
         this.cleanCanvas();
     };
 
@@ -528,18 +556,47 @@
     }
 
     GuessWhat.prototype.onIncomingAllGlobalUsers = function (e) {
-        console.log(e);
         var clients = e.clients;
         this.generalClients = clients;
         this.displayClients();
     };
 
     GuessWhat.prototype.onIncomingGlobalClient = function (e) {
-        console.log(e);
         this.generalClients.push(e.client);
         this.displayClients();
-    }
+    };
 
+    GuessWhat.prototype.onLeavingGlobalClient = function (e) {
+        var clientToRemove = e.client;
+        this.generalClients = this.generalClients.filter(function (client, i) {
+            if (client.Nickname !== clientToRemove.Nickname) {
+                return true;
+            }
+        })
+        this.displayClients();
+    };
+
+    GuessWhat.prototype.onLeavingRoom = function (e) {
+        var roomToRemove = e.room;
+        this.rooms = this.rooms.filter(function (room, i) {
+            if (room.Name !== roomToRemove.Name) {
+                return true;
+            }
+        })
+        this.displayRooms();
+    };
+
+    GuessWhat.prototype.onIncomingAllRoomMessage = function (e) {
+        var messages = e.messages;
+        this.roomChatMessages = messages;
+        this.displayChat();
+    };
+
+    GuessWhat.prototype.onIncomingRoomMessage = function (e) {
+        console.log(e);
+        this.roomChatMessages.push(e.message);
+        this.displayChat();
+    };
     function replaceAt (string, index, replacement) {
         return string.substr(0, index) + replacement + string.substr(index + replacement.length);
     }
