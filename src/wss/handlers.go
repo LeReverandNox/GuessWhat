@@ -130,10 +130,12 @@ func sendMessageAction(client *game.Client, content string) {
 			}
 		} else {
 			msg := myGame.AddMessage(client, content)
+			msgObject := make(map[string]interface{}, 10)
 			msgMap := structs.Map(msg)
-			msgMap["action"] = "incoming_global_message"
+			msgObject["message"] = msgMap
+			msgObject["action"] = "incoming_global_message"
 
-			client.Socket.SendToAll(myGame, msgMap)
+			client.Socket.SendToAll(myGame, msgObject)
 		}
 	}
 }
