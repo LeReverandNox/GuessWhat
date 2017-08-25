@@ -8,5 +8,6 @@
   "main": "main.go",
   "license": "MIT",
   "dependencies": {
+    "jquery": "^3.2.1"
   }
 }
