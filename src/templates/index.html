@@ -8,54 +8,70 @@
     <!--Own CSS Sheet-->
     <link rel="stylesheet" href="css/style.css">
 
+    <script src="js/lib/jquery/dist/jquery.js"></script>
     <script src="js/guess-what.js"></script>
     <title>Guess What ?</title>
 </head>
 <body>
     <h1 id="hw">Guess What ?</h1>
     <h2>C'est du sale mamène</h2>
-    <div>
-        <input type="text" id="nickname">
-        <button id="connexion_button">Connect</button>
+    <div id="connexion_block">
+        <div>
+            <input type="text" id="nickname">
+            <button id="connexion_button">Connect</button>
+        </div>
     </div>
-    <div>
-        <input type="text" id="message">
-        <button id="send_message">Send message</button>
+    <div id="game_block">
+        <div>
+            <input type="text" id="message">
+            <button id="send_message">Send message</button>
+        </div>
+        <div>
+            <input type="text" id="room">
+            <button id="join_room">Join room</button>
+            <button id="leave_room">Leave room</button>
+            <button id="start_room">Start room</button>
+        </div>
+        <div id="color_holder">
+            Color:
+            <button data-color="000000">Black</button>
+            <button data-color="FFFFFF">White</button>
+            <button data-color="FF0000">Red</button>
+            <button data-color="0000FF">Blue</button>
+            <button data-color="00FF00">Green</button>
+            <button data-color="FFFF00">Yellow</button>
+            <button data-color="f000ff">Pink</button>
+            <button data-color="ffa500">Orange</button>
+        </div>
+        <div id="thickness_holder">
+            Thickness:
+            <button data-thickness="1">Extra Small</button>
+            <button data-thickness="3">Small</button>
+            <button data-thickness="7">Medium</button>
+            <button data-thickness="15">Large</button>
+            <button data-thickness="25">Extra Large</button>
+        </div>
+        <div id="tools_holder">
+            <button data-tool="clear">Clear</button>
+        </div>
+        <div id="round_info_holder">
+            <div id="word_holder">
+                <p id="secret_word"></p>
+            </div>
+            <div id="countdown_holder">
+                <div id="countdown"></div>
+            </div>
+        </div>
+        <div id="rooms_holder">
+            Rooms
+        </div>
+        <div id="clients_holder">
+            Clients
+        </div>
+        <div id="chat_holder">
+            Messages
+        </div>
+        <canvas id="canvas" width="800" height="600"></canvas>
     </div>
-    <div>
-        <input type="text" id="room">
-        <button id="join_room">Join room</button>
-        <button id="leave_room">Leave room</button>
-        <button id="start_room">Start room</button>
-    </div>
-    <div id="color_holder">
-        Color:
-        <button data-color="000000">Black</button>
-        <button data-color="FFFFFF">White</button>
-        <button data-color="FF0000">Red</button>
-        <button data-color="0000FF">Blue</button>
-        <button data-color="00FF00">Green</button>
-        <button data-color="FFFF00">Yellow</button>
-        <button data-color="f000ff">Pink</button>
-        <button data-color="ffa500">Orange</button>
-    </div>
-    <div id="thickness_holder">
-        Thickness:
-        <button data-thickness="1">Extra Small</button>
-        <button data-thickness="3">Small</button>
-        <button data-thickness="7">Medium</button>
-        <button data-thickness="15">Large</button>
-        <button data-thickness="25">Extra Large</button>
-    </div>
-    <div id="tools_holder">
-        <button data-tool="clear">Clear</button>
-    </div>
-    <div id="word_holder">
-        <p id="secret_word"></p>
-    </div>
-    <div id="countdown_holder">
-        <div id="countdown"></div>
-    </div>
-    <canvas id="canvas" width="640" height="480"></canvas>
 </body>
 </html>
