@@ -1,10 +1,10 @@
 version: '2'
 services:
-  guess_what:
+  guesswhat:
     build: ./
-    volumes:
-      - $GW_WORDS_FILE:/go/src/github.com/LeReverandNox/GuessWhat/src/assets/words.txt
+    # volumes:
       # DEV PURPOSE ONLY
+      # - $GW_WORDS_FILE:/go/src/github.com/LeReverandNox/GuessWhat/src/assets/words.txt
       # - $GW_SRC:/go/src/github.com/LeReverandNox/GuessWhat/src
     environment:
       - ENVIRONMENT=$GW_ENV
