@@ -14,12 +14,11 @@ ADD src .
 
 RUN go-wrapper download
 RUN go-wrapper install
+RUN go build -o guesswhat
 
 RUN go get github.com/pilu/fresh
 
 RUN bower install --allow-root
-
-VOLUME /go/src/github.com/LeReverandNox/GuessWhat/src
 
 EXPOSE 3000
 

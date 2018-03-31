@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ ${ENVIRONMENT} == "prod" ]; then
-	app
+	exec ./guesswhat
 else
-	fresh
+	exec fresh
 fi

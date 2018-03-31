@@ -1,0 +1,10 @@
+version: '2'
+services:
+  guesswhat:
+    restart: unless-stopped
+    image: lereverandnox/guesswhat
+    labels:
+      - rap.host=$GW_HOST
+      - rap.port=3000
+      - rap.le_host=$GW_HOST
+      - rap.le_email=$LETSENCRYPT_EMAIL
