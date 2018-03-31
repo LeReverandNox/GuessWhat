@@ -81,7 +81,8 @@
 
         var nickname = this.nicknameInput.value;
         if (window["WebSocket"]) {
-            this.socket = new WebSocket("ws://" + document.location.host + "/ws?nickname=" + nickname);
+            var wsProto = document.location.protocol == "https:" ? "wss://" : "ws://"
+            this.socket = new WebSocket(wsProto + document.location.host + "/ws?nickname=" + nickname);
             this.socket.onclose = this.onClose.bind(this);
             this.socket.onmessage = this.onMessage.bind(this);
             this.isConnected = true;
